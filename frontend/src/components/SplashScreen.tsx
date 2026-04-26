@@ -42,7 +42,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <div className="absolute bottom-12 flex flex-col items-center gap-2">
           <p className="text-white/30 text-xs tracking-[0.3em] uppercase">Scroll to enter</p>
           <div className="flex flex-col items-center gap-1 mt-2">
-            <div className="w-[1.5px] h-10 rounded-full bg-linear-to-b from-transparent via-white/50 to-transparent animate-pulse" />
+            <div className="w-[1.5px] h-10 rounded-full bg-gradient-to-b from-transparent via-white/50 to-transparent animate-pulse" />
             <svg className="w-4 h-4 text-white/40 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
             </svg>
