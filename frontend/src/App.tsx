@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
+import Philanthropy from './pages/Philantrophy';
 import SplashScreen from './components/SplashScreen';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home playVideoRef={playVideoRef} />} />
             <Route path="/about" element={<About />} />
+            <Route path="/philanthropy" element={<Philanthropy />} />
           </Routes>
         )}
 

@@ -125,7 +125,7 @@ export default function Home({ playVideoRef }: HomeProps) {
               </p>
             </Animate>
             <Animate delay={150}>
-              <div className="bg-seaSalt p-10 rounded-3xl">
+              <div className="bg-seaSalt p-10 rounded-3xl shadow-md">
                 <div className="text-6xl font-light text-castletonGreen mb-4">"</div>
                 <p className="italic text-xl">Connecting local expertise with global AI infrastructure to empower communities everywhere.</p>
                 <div className="mt-8 flex items-center gap-4">
