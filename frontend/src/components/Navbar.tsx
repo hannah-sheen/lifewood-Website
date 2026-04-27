@@ -6,18 +6,12 @@ import lifewoodLogo from '../assets/lifewood-logo.avif';
 const NAV_ITEMS = [
   { label: 'Home', path: '/' },
   { label: 'Philanthropy & Impact', path: '/philanthropy' },
+  { label: 'AI Initiatives', path: '/ai-initiatives' },
   { label: 'Careers', path: '/careers' },
   { label: 'Contact Us', path: '/contact' },
 ];
 
 const DROPDOWNS = [
-  {
-    label: 'AI Initiatives',
-    items: [
-      { label: 'Initiative One', path: '/ai/initiative-one' },
-      { label: 'Initiative Two', path: '/ai/initiative-two' },
-    ],
-  },
   {
     label: 'Our Company',
     items: [
@@ -107,13 +101,6 @@ export default function Navbar() {
               </div>
             );
           })}
-
-          <div
-            onClick={() => handleNav('/faq')}
-            className={`text-sm px-5 py-2 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap ${isActive('/faq') ? 'bg-saffaron text-darkSerpent font-bold' : 'bg-saffaron/20 text-saffaron hover:bg-saffaron hover:text-darkSerpent font-bold'}`}
-          >
-            FAQ
-          </div>
         </div>
 
         {/* Hamburger */}
@@ -164,13 +151,6 @@ export default function Navbar() {
               )}
             </div>
           ))}
-
-          <div
-            onClick={() => handleNav('/faq')}
-            className="mt-2 text-center text-sm px-5 py-2 rounded-full cursor-pointer bg-saffaron/20 text-saffaron font-bold"
-          >
-            FAQ
-          </div>
         </div>
     </nav>
   );

@@ -374,7 +374,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
       
       <div 
         ref={containerRef} 
-        className="relative w-full bg-[#133020] rounded-2xl overflow-hidden"
+        className="relative w-full bg-darkSerpent rounded-2xl overflow-hidden"
         style={{ height: '100%', minHeight: '550px' }}
       >
         {/* Zoom Controls */}
@@ -384,7 +384,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
               const svg = d3.select(svgRef.current);
               svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 1.2);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
+            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
           >
             +
           </button>
@@ -393,7 +393,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
               const svg = d3.select(svgRef.current);
               svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 0.8);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
+            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
           >
             -
           </button>
@@ -403,7 +403,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
               svg.transition().duration(500).call(zoomRef.current.transform as any, d3.zoomIdentity);
               setSelectedCountry(null);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-sm font-semibold z-30 border-white border-2"
+            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-sm font-semibold z-30 border-white border-2"
           >
             ↺
           </button>
@@ -414,7 +414,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
         {/* Interactive Tooltip */}
         {tooltip && (
           <div 
-            className="fixed bg-[#046241] text-[#F9F7F7] rounded-lg shadow-xl z-50"
+            className="fixed bg-castletonGreen text-seaSalt rounded-lg shadow-xl z-50"
             style={{
               left: tooltip.x + 15,
               top: tooltip.y - 60,
@@ -422,12 +422,12 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
               animation: 'fadeIn 0.2s ease-out'
             }}
           >
-            <div className="p-3 border-b border-[#FFB347]/30">
+            <div className="p-3 border-b border-saffaron/30">
               <div className="font-semibold text-sm flex items-center gap-2">
                 <span>📍</span>
                 <span>{tooltip.name}</span>
               </div>
-              <div className="text-xs text-[#FFB347] mt-1">{tooltip.city}</div>
+              <div className="text-xs text-saffaron mt-1">{tooltip.city}</div>
             </div>
             <div className="p-3 text-xs">
               {tooltip.details}
@@ -436,21 +436,21 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
         )}
         
         {/* Interactive Legend */}
-        <div className="absolute bottom-4 right-4 bg-[#133020]/95 backdrop-blur-sm rounded-lg p-3 text-xs z-20 border border-[#FFB347]/30 shadow-lg">
+        <div className="absolute bottom-4 right-4 bg-darkSerpent/95 backdrop-blur-sm rounded-lg p-3 text-xs z-20 border border-saffaron/30 shadow-lg">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-3 h-3 rounded-full bg-[#FFB347] animate-pulse"></div>
-            <span className="text-[#F9F7F7]">Active Offices (20)</span>
+            <div className="w-3 h-3 rounded-full bg-saffaron animate-pulse"></div>
+            <span className="text-seaSalt">Active Offices (20)</span>
           </div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-3 h-3 rounded-full bg-white border-2 border-[#FFB347]"></div>
-            <span className="text-[#F9F7F7]">Office Locations</span>
+            <div className="w-3 h-3 rounded-full bg-white border-2 border-saffaron"></div>
+            <span className="text-seaSalt">Office Locations</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-[#FFC370]"></div>
-            <span className="text-[#F9F7F7]">Hover/Selected</span>
+            <div className="w-3 h-3 rounded-full bg-earthYellow"></div>
+            <span className="text-seaSalt">Hover/Selected</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-[#FFB347]/30">
-            <div className="text-[#F9F7F7]/60 text-xs flex items-center gap-2">
+          <div className="mt-2 pt-2 border-t border-saffaron/30">
+            <div className="text-seaSalt/60 text-xs flex items-center gap-2">
               <span>🖱️</span> Click to zoom
               <span>🔍</span> Scroll to zoom
               <span>✋</span> Drag to pan
@@ -459,8 +459,8 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
         </div>
         
         {/* Instructions */}
-        <div className="absolute bottom-4 left-4 bg-[#133020]/80 backdrop-blur-sm rounded-lg px-3 py-2 text-xs z-20 border border-[#FFB347]/30">
-          <span className="text-[#F9F7F7]">💡 Tip: Click on any country or marker to zoom in</span>
+        <div className="absolute bottom-4 left-4 bg-darkSerpent/80 backdrop-blur-sm rounded-lg px-3 py-2 text-xs z-20 border border-saffaron/30">
+          <span className="text-seaSalt">💡 Tip: Click on any country or marker to zoom in</span>
         </div>
       </div>
     </>
