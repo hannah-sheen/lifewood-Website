@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
 
@@ -25,14 +25,87 @@ const OFFICE_LOCATIONS = [
   { name: 'Sierra Leone', lng: -13.2348, lat: 8.4844, city: 'Freetown', details: 'West Africa Hub - 30+ employees' },
 ];
 
-export default function OperationsMap() {
+const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: { selectedCountry?: string | null }, ref) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [tooltip, setTooltip] = useState<{ name: string; city: string; details: string; x: number; y: number } | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [transform, setTransform] = useState({ x: 0, y: 0 });
+  const zoomRef = useRef<any>(null);
+  const svgRefForZoom = useRef<SVGSVGElement | null>(null);
+  const widthRef = useRef<number>(0);
+  const heightRef = useRef<number>(0);
+
+  // Expose zoomToCountry method to parent component
+  useImperativeHandle(ref, () => ({
+    zoomToCountry: (countryName: string, lng: number, lat: number) => {
+      setSelectedCountry(countryName);
+      
+      setTimeout(() => {
+        if (svgRefForZoom.current && zoomRef.current && widthRef.current && heightRef.current) {
+          const width = widthRef.current;
+          const height = heightRef.current;
+          
+          const projection = d3.geoMercator()
+            .scale(width / 4.2)
+            .center([20, 5])
+            .translate([width / 2, height / 2]);
+          
+          const coords = projection([lng, lat]);
+          if (coords) {
+            const svg = d3.select(svgRefForZoom.current);
+            const newTransform = { 
+              x: width / 2 - coords[0], 
+              y: height / 2 - coords[1], 
+              k: 3 
+            };
+            
+            svg.transition().duration(750).call(
+              zoomRef.current.transform as any, 
+              d3.zoomIdentity
+                .translate(newTransform.x, newTransform.y)
+                .scale(newTransform.k)
+            );
+          }
+        }
+      }, 100);
+    }
+  }));
+
+  // Update selected country when external prop changes
+  useEffect(() => {
+    if (externalSelectedCountry) {
+      const office = OFFICE_LOCATIONS.find(o => o.name === externalSelectedCountry);
+      if (office && svgRefForZoom.current && zoomRef.current) {
+        setSelectedCountry(externalSelectedCountry);
+        
+        const width = widthRef.current;
+        const height = heightRef.current;
+        
+        const projection = d3.geoMercator()
+          .scale(width / 4.2)
+          .center([20, 5])
+          .translate([width / 2, height / 2]);
+        
+        const coords = projection([office.lng, office.lat]);
+        if (coords) {
+          const svg = d3.select(svgRefForZoom.current);
+          const newTransform = { 
+            x: width / 2 - coords[0], 
+            y: height / 2 - coords[1], 
+            k: 3 
+          };
+          
+          svg.transition().duration(750).call(
+            zoomRef.current.transform as any, 
+            d3.zoomIdentity
+              .translate(newTransform.x, newTransform.y)
+              .scale(newTransform.k)
+          );
+        }
+      }
+    }
+  }, [externalSelectedCountry]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -52,6 +125,11 @@ export default function OperationsMap() {
     const width = dimensions.width;
     const height = dimensions.height;
     
+    // Store width and height for external zoom function
+    widthRef.current = width;
+    heightRef.current = height;
+    svgRefForZoom.current = svgRef.current;
+    
     // Clear previous content
     d3.select(svgRef.current).selectAll('*').remove();
     
@@ -67,7 +145,7 @@ export default function OperationsMap() {
     const projection = d3.geoMercator()
       .scale(width / 4.2)
       .center([20, 5])
-      .translate([width / 2 + transform.x, height / 2 + transform.y]);
+      .translate([width / 2, height / 2]);
     
     // Create path generator
     const geoPath = d3.geoPath().projection(projection);
@@ -77,8 +155,6 @@ export default function OperationsMap() {
       .scaleExtent([1, 8])
       .on('zoom', (event) => {
         const newTransform = event.transform;
-        setTransform({ x: newTransform.x, y: newTransform.y });
-        setZoomLevel(newTransform.k);
         
         // Update projection and redraw
         const newProjection = d3.geoMercator()
@@ -110,6 +186,7 @@ export default function OperationsMap() {
       });
     
     svg.call(zoom as any);
+    zoomRef.current = zoom;
     
     // Load and draw world map
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json')
@@ -124,7 +201,6 @@ export default function OperationsMap() {
           .append('path')
           .attr('d', (feature: any) => geoPath(feature))
           .attr('fill', (d: any) => {
-            // Highlight selected country
             const countryName = d.properties?.name || d.properties?.admin || '';
             const hasOffice = OFFICE_LOCATIONS.some(office => 
               countryName.toLowerCase().includes(office.name.toLowerCase()) ||
@@ -306,30 +382,28 @@ export default function OperationsMap() {
           <button
             onClick={() => {
               const svg = d3.select(svgRef.current);
-              const zoom = d3.zoom().scaleBy;
-              svg.transition().duration(300).call(zoom as any, 1.2);
+              svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 1.2);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold"
+            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
           >
             +
           </button>
           <button
             onClick={() => {
               const svg = d3.select(svgRef.current);
-              const zoom = d3.zoom().scaleBy;
-              svg.transition().duration(300).call(zoom as any, 0.8);
+              svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 0.8);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold"
+            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
           >
             -
           </button>
           <button
             onClick={() => {
               const svg = d3.select(svgRef.current);
-              svg.transition().duration(500).call(d3.zoom().transform as any, d3.zoomIdentity);
+              svg.transition().duration(500).call(zoomRef.current.transform as any, d3.zoomIdentity);
               setSelectedCountry(null);
             }}
-            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-sm font-semibold"
+            className="w-10 h-10 bg-[#046241] text-white rounded-lg hover:bg-[#FFB347] transition-all duration-200 shadow-lg flex items-center justify-center text-sm font-semibold z-30 border-white border-2"
           >
             ↺
           </button>
@@ -340,7 +414,7 @@ export default function OperationsMap() {
         {/* Interactive Tooltip */}
         {tooltip && (
           <div 
-            className="fixed bg-[#046241] text-[#F9F7F7] rounded-lg shadow-xl z-50 animate-fadeIn"
+            className="fixed bg-[#046241] text-[#F9F7F7] rounded-lg shadow-xl z-50"
             style={{
               left: tooltip.x + 15,
               top: tooltip.y - 60,
@@ -391,4 +465,8 @@ export default function OperationsMap() {
       </div>
     </>
   );
-}
+});
+
+OperationsMap.displayName = 'OperationsMap';
+
+export default OperationsMap;
