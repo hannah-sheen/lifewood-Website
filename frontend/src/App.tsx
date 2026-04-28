@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SplashScreen from './components/SplashScreen';
 import Home from './pages/Home';
 import About from './pages/About';
+import Solutions from './pages/Solutions';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -84,6 +85,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home playVideoRef={playVideoRef} />} />
               <Route path="/about" element={<About />} />
+              <Route path="/solutions" element={<Solutions />} />
             </Routes>
           </main>
           <Footer />
