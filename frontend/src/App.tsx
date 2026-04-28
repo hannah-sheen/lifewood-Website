@@ -1,45 +1,94 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import SplashScreen from './components/SplashScreen';
 import Home from './pages/Home';
 import About from './pages/About';
-import Philanthropy from './pages/Philantrophy';
-import SplashScreen from './components/SplashScreen';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
-function App() {
-  const [entered, setEntered] = useState(false);
+export default function App() {
+  const [progress, setProgress] = useState(0);
+  const [hasEntered, setHasEntered] = useState(false);
   const playVideoRef = useRef<(() => void) | null>(null);
 
-  const handleEnter = () => {
-    if (playVideoRef.current) playVideoRef.current();
-    setEntered(true);
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  };
+  const SCROLL_LENGTH = 800; 
+
+  useEffect(() => {
+    // If the user hasn't entered yet, we handle the circle expansion
+    const handleScroll = () => {
+      if (hasEntered) return;
+
+      const scrollY = window.scrollY;
+      const raw = Math.min(scrollY / SCROLL_LENGTH, 1);
+      
+      let mappedProgress = 0;
+      if (raw <= 0.2) {
+        mappedProgress = 0;
+      } else if (raw > 0.2 && raw <= 0.35) {
+        // The "Sneak Peak" glimpse
+        const stageProgress = (raw - 0.2) / 0.15;
+        mappedProgress = stageProgress * 0.12; 
+      } else {
+        // The Expand
+        const stageProgress = Math.min((raw - 0.35) / 0.55, 1);
+        mappedProgress = 0.12 + (stageProgress * 0.88);
+      }
+      
+      setProgress(mappedProgress);
+
+      // Once raw scroll hits the end, we trigger the "Permanent Entry"
+      if (raw >= 1) {
+        setHasEntered(true);
+        // We reset the scroll so the Home page starts at the top
+        window.scrollTo(0, 0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasEntered]);
 
   return (
     <BrowserRouter>
-      {/* Splash sits on top while home loads underneath */}
-      {!entered && <SplashScreen onEnter={handleEnter} />}
+      {/* 1. THE GATE: This only renders until the circle is finished */}
+      {!hasEntered && (
+        <>
+          {/* Invisible depth to allow scrolling the splash */}
+          <div style={{ height: `calc(100vh + ${SCROLL_LENGTH}px)` }} className="absolute inset-0 z-0" />
+          
+          {/* The Black Background with Logo */}
+          <div className="fixed inset-0 z-10 bg-black flex items-center justify-center">
+            <SplashScreen progress={progress} />
+          </div>
 
-      <div style={{ opacity: entered ? 1 : 0, transition: 'opacity 0.8s ease' }}>
-        {entered && <Navbar />}
+          {/* The Expanding Lens (fixed on top) */}
+          <div 
+            className="fixed inset-0 z-20 pointer-events-none"
+            style={{
+              clipPath: `circle(${progress * 150}vmax at 50% 50%)`,
+              backgroundColor: '#000',
+              transition: 'clip-path 0.1s ease-out'
+            }}
+          >
+            {/* We show a "preview" of Home inside the circle */}
+            <Home playVideoRef={playVideoRef} />
+          </div>
+        </>
+      )}
 
-        {/* Pre-mount Home so video loads during splash, hide other pages until entered */}
-        {!entered ? (
-          <Home playVideoRef={playVideoRef} />
-        ) : (
-          <Routes>
-            <Route path="/" element={<Home playVideoRef={playVideoRef} />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/philanthropy" element={<Philanthropy />} />
-          </Routes>
-        )}
-
-        {entered && <Footer />}
-      </div>
+      {/* 2. THE ACTUAL WEBSITE: Renders normally once entered */}
+      {hasEntered && (
+        <div className="relative z-30 animate-in fade-in duration-700">
+          <Navbar />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home playVideoRef={playVideoRef} />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      )}
     </BrowserRouter>
   );
 }
-
-export default App;

@@ -1,4 +1,4 @@
-export default function Initiatives(){
+export default function Solutions(){
     return(
         <>
         </>
