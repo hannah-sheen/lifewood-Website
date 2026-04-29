@@ -4,7 +4,9 @@ import SplashScreen from './components/SplashScreen';
 import Home from './pages/Home';
 import About from './pages/About';
 import Solutions from './pages/Solutions';
+import Careers from './pages/Careers';
 import Navbar from './components/Navbar';
+import Contact from './pages/Contact';
 import Footer from './components/Footer';
 
 export default function App() {
@@ -86,6 +88,8 @@ export default function App() {
               <Route path="/" element={<Home playVideoRef={playVideoRef} />} />
               <Route path="/about" element={<About />} />
               <Route path="/solutions" element={<Solutions />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </main>
           <Footer />

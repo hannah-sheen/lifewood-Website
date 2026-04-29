@@ -1,5 +1,7 @@
+
 import { useRef, useState } from 'react';
-import { useScroll, useTransform, motion, useSpring } from 'framer-motion'; 
+import { Volume2, VolumeX } from 'lucide-react';
+import { useScroll, useTransform, motion, useSpring, AnimatePresence } from 'framer-motion'; 
 import Animate from '../components/Animate.tsx';
 import OperationsMap from '../components/OperationsMap.tsx';
 import partnershipImg from '../assets/partnership.jpeg';
@@ -8,6 +10,7 @@ import expandingImg from '../assets/expanding.jpeg';
 import visionImg from '../assets/vision.jpeg';
 import missionImg from '../assets/mission.jpeg';
 import { useTrail, TrailParticles } from '../hooks/useTrail.tsx';
+
 
 const CARDS = [
   {
@@ -96,14 +99,39 @@ function ShowcaseSlider() {
         </div>
         <Animate delay={300} className="h-[550px]">
           <div className="relative rounded-2xl overflow-hidden h-full shadow-xl">
-            <img key={active} src={card.img} alt={card.label} className="w-full h-full object-cover transition-opacity duration-500" />
-            <div className={`absolute inset-0 ${card.bg} opacity-20`} />
-            <div className="absolute bottom-5 left-5">
+            <AnimatePresence mode="wait">
+              <motion.img 
+                key={active} 
+                src={card.img} 
+                alt={card.label} 
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full object-cover" 
+              />
+            </AnimatePresence>
+            <div className={`absolute inset-0 ${card.bg} opacity-20 pointer-events-none`} />
+            <div className="absolute bottom-5 left-5 pointer-events-none">
               <span className={`px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase ${card.bg} ${card.text}`}>{card.label}</span>
             </div>
           </div>
         </Animate>
       </div>
+    </div>
+  );
+}
+
+function VideoPlayer({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const toggleMute = () => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } };
+  return (
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-video bg-darkSerpent/20">
+      <video ref={videoRef} autoPlay muted loop playsInline className="w-full h-full object-cover" src={src} />
+      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all">
+        {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
+      </button>
     </div>
   );
 }
@@ -164,7 +192,6 @@ export default function About() {
     setSelectedCountry(loc.name);
     scrollToSection('offices');
     
-    // Small delay to ensure the map is in view and ready
     setTimeout(() => {
       if (mapRef.current && mapRef.current.zoomToCountry) {
         mapRef.current.zoomToCountry(loc.name, loc.lng, loc.lat);
@@ -196,26 +223,32 @@ export default function About() {
 
       {/* HERO SECTION */}
       <section className="pt-25 pb-20 bg-darkSerpent">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <Animate>
-            <span className="text-saffaron font-bold tracking-[0.2em] uppercase text-sm mb-4 block">Our Story</span>
-            <h1 className="text-5xl md:text-8xl font-bold text-white mb-8 tracking-tight">
-              Intelligence with <span className="text-white/30 italic">Purpose.</span>
-            </h1>
-          </Animate>
-          <Animate delay={100}>
-            <p className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-              Since 2004, Lifewood has pioneered a unique model of high-performance AI data services rooted in social impact.
-            </p>
-          </Animate>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left: Video */}
+            <Animate>
+              <VideoPlayer src="/src/assets/careers/Lifewood Empowering the Future Through AI 2025.mp4" />
+            </Animate>
+            {/* Right: Text */}
+            <Animate delay={150}>
+              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Our Story</span>
+              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8 text-white">
+                Intelligence with <span className="text-white/30 italic">Purpose.</span>
+              </h1>
+              <p className="text-xl text-white/70 leading-relaxed">
+                Since 2004, Lifewood has pioneered a unique model of high-performance AI data services rooted in social impact.
+              </p>
+            </Animate>
+          </div>
         </div>
       </section>
 
       {/* SECTION: Overview */}
-      <section id="overview" className="py-25 bg-seaSalt">
+      <section id="overview" className="pt-20 pb-10 bg-seaSalt">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-start">
           <Animate>
-            <h2 className="text-4xl md:text-5xl font-bold text-darkSerpent leading-tight">
+            <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">The Lifewood Way</span>
+            <h2 className="text-6xl md:text-5xl font-bold text-darkSerpent leading-tight">
               We bridge the gap between raw data and <span className="text-saffaron">actionable intelligence.</span>
             </h2>
           </Animate>
@@ -229,16 +262,16 @@ export default function About() {
               </p>
             </Animate>
           </div>
-        </div>
+        </div>  
       </section>
 
       {/* SECTION: Vision & Mission */}
-      <section id="vision" ref={visionRef} className="py-25 bg-white overflow-hidden">
+      <section id="vision" ref={visionRef} className="pt-10 pb-20 bg-seaSalt overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-24">
+          <div className="text-center mb-15">
             <Animate>
-              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Purpose & Impact</span>
-              <h2 className="text-4xl md:text-6xl font-bold text-darkSerpent leading-tight">Our Guiding Light</h2>
+              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Our Guiding Light</span>
+              <h2 className="text-6xl md:text-6xl font-bold text-darkSerpent leading-tight">Vision & Mission</h2>
             </Animate>
           </div>
 
@@ -274,13 +307,13 @@ export default function About() {
       </section>
 
 
-      {/* SECTION: Core Values - WITH MOUSE TRAIL */}
-      <TrailSection id="values" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-25 text-white">
+      {/* SECTION: Core Values */}
+      <TrailSection id="values" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-20 text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-20">
             <Animate>
-              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Principles</span>
-              <h2 className="text-5xl font-bold">What we stand for.</h2>
+              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">What we stand for</span>
+              <h2 className="text-6xl font-bold">Core Values</h2>
             </Animate>
           </div>
           <div className="grid md:grid-cols-4 gap-8">
@@ -298,11 +331,12 @@ export default function About() {
       </TrailSection>
 
       {/* SECTION: How We Work */}
-      <section id="how-we-work" className="py-25 bg-white">
+      <section id="how-we-work" className="pt-20 pb-10 bg-seaSalt">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
+          <div className="mb-10">
             <Animate>
-                <h2 className="text-4xl font-bold text-darkSerpent mb-4">How We Work</h2>
+                <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">The Process</span>
+                <h2 className="text-6xl font-bold text-darkSerpent mb-4">How We Work</h2>
                 <p className="text-darkSerpent/50">Our methodology for high-impact, high-quality data engineering.</p>
             </Animate>
           </div>
@@ -310,33 +344,39 @@ export default function About() {
         </div>
       </section>
 
-      {/* SECTION: Global Presence */}
-      <section id="offices" className="py-25 bg-seaSalt">
+      {/* SECTION: Our Offices */}
+      <section id="offices" className="py-10 pb-20 bg-seaSalt">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid gap-12 items-end mb-8">
-              <Animate>
-                <h2 className="text-4xl font-bold text-darkSerpent">A Truly Global <br/> Infrastructure.</h2>
-              </Animate>
-              
-              {/* BUTTON LIST */}
-              <Animate delay={100} className="flex flex-wrap gap-3">
-                {OFFICE_LOCATIONS.map((loc, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleMapFocus(loc)}
-                    className={`px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all shadow-sm bg-white active:scale-95 ${
-                      selectedCountry === loc.name
-                        ? 'border-saffaron bg-saffaron text-darkSerpent'
-                        : 'border-darkSerpent/10 text-darkSerpent hover:bg-darkSerpent hover:text-white'
-                    }`}
-                  >
-                    {loc.name}
-                  </button>
-                ))}
-              </Animate>
-          </div>
+          <Animate className="mb-12">
+            <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+              <div className="md:w-1/2 text-left">
+                <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Global Presence</span>
+                <h2 className="text-6xl md:text-6xl font-bold text-darkSerpent">Our Offices</h2>
+              </div>
+              <div className="md:w-1/2 text-right">
+                <p className="text-darkSerpent/50 text-lg leading-relaxed max-w-md ml-auto">
+                  Strategic operation hubs across emerging markets, providing localized expertise and 24/7 delivery capabilities.
+                </p>
+              </div>
+            </div>
+          </Animate>
 
-          {/* THE MAP CONTAINER */}
+          <Animate delay={100} className="flex flex-wrap gap-3 mb-8">
+            {OFFICE_LOCATIONS.map((loc, i) => (
+              <button
+                key={i}
+                onClick={() => handleMapFocus(loc)}
+                className={`px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all shadow-sm bg-white active:scale-95 ${
+                  selectedCountry === loc.name
+                    ? 'border-saffaron bg-saffaron text-darkSerpent'
+                    : 'border-darkSerpent/10 text-darkSerpent hover:bg-darkSerpent hover:text-white'
+                }`}
+              >
+                {loc.name}
+              </button>
+            ))}
+          </Animate>
+
           <div className="h-[600px] rounded-[2.5rem] overflow-hidden border border-darkSerpent/5 shadow-2xl relative">
             <OperationsMap ref={mapRef} selectedCountry={selectedCountry} />
           </div>

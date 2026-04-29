@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles} from 'lucide-react';
 import ContactButton from '../components/ContactButton.tsx';
 import Animate from '../components/Animate.tsx';
 import { useTrail, TrailParticles } from '../hooks/useTrail.tsx';
@@ -82,31 +82,75 @@ export default function Home({ playVideoRef }: HomeProps) {
   return (
     <>
       {/* HERO */}
-      <section ref={heroRef} className="relative text-white min-h-screen flex items-center overflow-hidden">
-        <video ref={videoRef} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" src="/src/assets/landing_bg.mp4" />
-        <div className="absolute inset-0 bg-darkSerpent/60" />
-        {isHeroVisible && (
-          <button onClick={() => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } }}
-            className="absolute top-6 right-6 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/20">
-            {muted ? <VolumeX className="w-5 h-5 text-white" /> : <Volume2 className="w-5 h-5 text-white" />}
-          </button>
-        )}
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center w-full">
-          <h1 className="text-5xl md:text-7xl font-semibold leading-tight tracking-tighter mb-6">
-            The world's leading provider<br />of <span className="text-saffaron">AI-powered</span> data solutions
+     <section ref={heroRef} className="relative text-white min-h-screen flex items-center overflow-hidden">
+      {/* BACKGROUND VIDEO */}
+      <video 
+        ref={videoRef} 
+        autoPlay 
+        loop 
+        muted // Recommended to keep true by default for autoPlay compatibility
+        playsInline 
+        className="absolute inset-0 w-full h-full object-cover scale-105" // slight scale to prevent edge gaps
+        src="/src/assets/landing_bg.mp4" 
+      />
+      
+      {/* BRANDED OVERLAY */}
+      <div className="absolute inset-0 bg-darkSerpent/70 backdrop-blur-[2px]" />
+
+      {/* MUTE TOGGLE */}
+      {isHeroVisible && (
+        <button 
+          onClick={() => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } }}
+          className="absolute top-8 right-8 z-20 p-4 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all border border-white/10 group"
+        >
+          {muted ? (
+            <VolumeX className="w-5 h-5 text-white/60 group-hover:text-saffaron transition-colors" />
+          ) : (
+            <Volume2 className="w-5 h-5 text-saffaron animate-pulse" />
+          )}
+        </button>
+      )}
+
+      {/* CONTENT */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center w-full">
+        <Animate>
+          <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-sm px-5 py-2 rounded-full border border-white/10 mb-8">
+            <Sparkles className="w-3.5 h-3.5 text-saffaron" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
+              Intelligence with Purpose
+            </span>
+          </div>
+        </Animate>
+
+        <Animate delay={100}>
+          <h1 className="text-6xl md:text-[5.5rem] font-bold leading-[0.9] tracking-tighter mb-8">
+            The world's leading provider <br />
+            of <span className="text-saffaron">AI-powered</span> <span className="text-white/20 italic">solutions</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-lg opacity-90 mb-10">
-            Transforming raw data into intelligence that drives innovation and positive impact worldwide.
+        </Animate>
+
+        <Animate delay={200}>
+          <p className="max-w-2xl mx-auto text-xl text-white/60 mb-12 leading-relaxed">
+            Transforming raw data into actionable intelligence that drives innovation and sustainable social impact worldwide.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <ContactButton />
-            <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-              className="border-2 border-white/70 hover:border-white text-white px-8 py-3 rounded-2xl font-medium transition-all">
+        </Animate>
+
+        <Animate delay={300}>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
+            <ContactButton /> {/* Ensure your ContactButton matches the new rounded-2xl style */}
+            <button 
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group bg-transparent border border-white/20 hover:border-white/40 text-white px-10 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all backdrop-blur-sm"
+            >
               Learn More
             </button>
           </div>
-        </div>
-      </section>
+        </Animate>
+      </div>
+
+      {/* DECORATIVE BOTTOM GRADIENT */}
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-seaSalt to-transparent" />
+    </section>
 
       {/* ABOUT */}
       <TrailSection id="about" bg="bg-white" glowColor="rgba(255,179,71,0.06)" className="py-24">

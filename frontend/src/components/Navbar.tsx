@@ -6,10 +6,10 @@ import lifewoodLogo from '../assets/lifewood-logo.avif';
 const NAV_ITEMS = [
   { label: 'Home', path: '/' },
   { label: 'AI Solutions', path: '/solutions' },  
-  { label: 'Careers', path: '/careers' },
-  { label: 'Contact Us', path: '/contact' },
-  { label: 'About Us', path: '/about' },
   { label: 'Services', path: '/services' },
+  { label: 'Careers', path: '/careers' },
+  { label: 'About Us', path: '/about' },
+  { label: 'Contact Us', path: '/contact' },
 ];
 
 const gradientBar = 'linear-gradient(90deg, #133020, #FFB347)';

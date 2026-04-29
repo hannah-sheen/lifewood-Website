@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export const DocumentStack = () => (
   <div className="relative w-14 h-14 mb-8">
-    <div className="absolute inset-0 bg-saffaron/10 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-500" />
+    <div className="absolute inset-0 bg-saffaron/20 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-500" />
     <div className="absolute inset-0 bg-white border border-darkSerpent/15 rounded-2xl flex items-center justify-center shadow-sm">
       <FileText className="w-6 h-6 text-saffaron" />
     </div>
@@ -31,7 +31,7 @@ export const VisionGrid = () => (
           key={i}
           animate={{ opacity: [0.2, 0.6, 0.2] }}
           transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
-          className="bg-saffaron/50 rounded-md" 
+          className="bg-saffaron/70 rounded-md" 
         />
       ))}
     </div>
@@ -44,7 +44,7 @@ export const VideoLens = () => (
     <motion.div 
       animate={{ x: [-20, 20, -20] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute inset-y-0 w-full bg-darkSerpent/[0.03] skew-x-12"
+      className="absolute inset-y-0 w-full bg-darkSerpent/15 skew-x-12"
     />
     <Eye className="w-6 h-6 text-darkSerpent relative z-10 group-hover:scale-110 transition-transform" />
   </div>
