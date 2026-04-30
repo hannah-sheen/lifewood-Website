@@ -1,7 +1,7 @@
 
 import { useRef, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
-import { useScroll, useTransform, motion, useSpring, AnimatePresence } from 'framer-motion'; 
+import { useScroll, useTransform, motion, useSpring } from 'framer-motion'; 
 import Animate from '../components/Animate.tsx';
 import OperationsMap from '../components/OperationsMap.tsx';
 import partnershipImg from '../assets/partnership.jpeg';
@@ -9,7 +9,7 @@ import applicationImg from '../assets/application.jpeg';
 import expandingImg from '../assets/expanding.jpeg';
 import visionImg from '../assets/vision.jpeg';
 import missionImg from '../assets/mission.jpeg';
-import { useTrail, TrailParticles } from '../hooks/useTrail.tsx';
+import MouseTrail from '../components/MouseTrail.tsx';
 
 
 const CARDS = [
@@ -62,61 +62,124 @@ const OFFICE_LOCATIONS = [
 
 function ShowcaseSlider() {
   const [active, setActive] = useState(0);
+  const [phase, setPhase] = useState<'idle' | 'stacking' | 'unstacking'>('idle');
   const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false });
-  const card = CARDS[active];
 
+  const handleSelect = (i: number) => {
+    if (i === active || phase !== 'idle') return;
+    // Phase 1: stack all images together
+    setPhase('stacking');
+    setTimeout(() => {
+      // Phase 2: set new active and unstack
+      setActive(i);
+      setPhase('unstacking');
+      setTimeout(() => setPhase('idle'), 500);
+    }, 400);
+  };
+
+ 
   return (
-    <div className="w-full"
+    <div
+      className="w-full"
       onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); setCursor({ x: e.clientX - r.left, y: e.clientY - r.top, visible: true }); }}
       onMouseLeave={() => setCursor(p => ({ ...p, visible: false }))}
       style={{ cursor: 'none' }}
     >
-      <div className="grid md:grid-cols-2 gap-8 items-stretch relative">
+      <div className="grid md:grid-cols-2 gap-8 items-center relative">
         {cursor.visible && (
           <span className="absolute pointer-events-none z-50 rounded-full bg-saffaron" style={{
             left: cursor.x, top: cursor.y, width: 14, height: 14,
             transform: 'translate(-50%,-50%)', boxShadow: '0 0 10px 3px rgba(255,179,71,0.53)',
           }} />
         )}
-        <div className="flex flex-col gap-4 h-[550px]">
+
+        {/* Left: Cards */}
+        <div className="flex flex-col gap-4 h-[520px]">
           {CARDS.map((c, i) => {
             const isActive = i === active;
             return (
               <Animate key={i} delay={i * 100} className="flex-1">
                 <div
-                  onClick={() => setActive(i)}
+                  onClick={() => handleSelect(i)}
                   className={`rounded-2xl p-6 transition-all duration-300 h-full flex flex-col justify-center cursor-none ${
                     isActive ? `${c.bg} shadow-xl scale-[1.02]` : 'bg-darkSerpent/5 hover:bg-darkSerpent/10 shadow-sm'
                   }`}
                 >
                   <span className={`text-xs font-semibold tracking-widest uppercase ${isActive ? c.sub : 'text-darkSerpent/40'}`}>{c.label}</span>
                   <h3 className={`text-xl font-semibold mt-2 mb-3 ${isActive ? c.text : 'text-darkSerpent/50'}`}>{c.title}</h3>
-                  {isActive && <p className={`text-sm leading-relaxed ${c.sub} mt-2 animate-in fade-in slide-in-from-bottom-2`}>{c.desc}</p>}
+                  {isActive && <p className={`text-sm leading-relaxed ${c.sub} mt-2`}>{c.desc}</p>}
                 </div>
               </Animate>
             );
           })}
         </div>
-        <Animate delay={300} className="h-[550px]">
-          <div className="relative rounded-2xl overflow-hidden h-full shadow-xl">
-            <AnimatePresence mode="wait">
-              <motion.img 
-                key={active} 
-                src={card.img} 
-                alt={card.label} 
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0 w-full h-full object-cover" 
-              />
-            </AnimatePresence>
-            <div className={`absolute inset-0 ${card.bg} opacity-20 pointer-events-none`} />
-            <div className="absolute bottom-5 left-5 pointer-events-none">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase ${card.bg} ${card.text}`}>{card.label}</span>
-            </div>
-          </div>
-        </Animate>
+
+        {/* Right: Stacked images */}
+        <div className="relative h-[520px] w-full perspective-1000">
+          {CARDS.map((c, i) => {
+            const isActive = i === active;
+            const isAhead = i < active;
+            const isBehind = i > active;
+            
+            // Position relative to the active card
+            const stackPosition = i - active;
+
+            return (
+              <motion.div
+                key={i}
+                className="absolute w-full h-[520px] rounded-[2rem] overflow-hidden shadow-2xl"
+                initial={false}
+                animate={{ 
+                  // Cards already seen fly up and out
+                  // Waiting cards shift down 30px to peek out
+                  top: isActive ? 0 : isAhead ? -150 : stackPosition * 30,
+                  
+                  // Scale down back cards for depth
+                  scale: isActive ? 1 : isAhead ? 0.8 : 1 - (stackPosition * 0.05),
+                  
+                  // Background cards stay visible but slightly faded
+                  opacity: isActive ? 1 : isAhead ? 0 : 0.9,
+                  
+                  // Active card on top
+                  zIndex: isActive ? 50 : CARDS.length - i,
+                  
+                  rotateX: isActive ? 0 : -5,
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 200, 
+                  damping: 25 
+                }}
+                style={{ 
+                  pointerEvents: isActive ? 'auto' : 'none',
+                  transformOrigin: 'top center' 
+                }}
+              >
+                <img 
+                  src={c.img} 
+                  alt={c.label} 
+                  className="w-full h-full object-cover" 
+                />
+                
+                {/* Depth overlay for images in the back */}
+                {isBehind && (
+                  <div className="absolute inset-0 bg-black/20" />
+                )}
+    
+                {/* Brand color tint */}
+                <div className={`absolute inset-0 ${c.bg} opacity-10`} />
+
+                {isActive && (
+                  <div className="absolute bottom-6 left-6">
+                    <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-darkSerpent shadow-lg">
+                      {c.label}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -135,21 +198,6 @@ function VideoPlayer({ src }: { src: string }) {
     </div>
   );
 }
-
-function TrailSection({ id, bg, glowColor, children, className = '' }: {
-  id?: string; bg: string; glowColor: string; children: React.ReactNode; className?: string;
-}) {
-  const { ref, trails, glow, onMouseMove } = useTrail();
-  return (
-    <div id={id} ref={ref} onMouseMove={onMouseMove} className={`relative overflow-hidden cursor-none ${bg} ${className}`}>
-      <div className="absolute inset-0 pointer-events-none transition-all duration-75"
-        style={{ background: `radial-gradient(500px circle at ${glow.x}% ${glow.y}%, ${glowColor}, transparent 60%)` }} />
-      <TrailParticles trails={trails} />
-      <div className="relative z-10">{children}</div>
-    </div>
-  );
-}
-
 
 export default function About() {
   const mapRef = useRef<any>(null);
@@ -308,7 +356,7 @@ export default function About() {
 
 
       {/* SECTION: Core Values */}
-      <TrailSection id="values" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-20 text-white">
+      <MouseTrail id="values" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-20 text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-20">
             <Animate>
@@ -328,16 +376,26 @@ export default function About() {
             ))}
           </div>
         </div>
-      </TrailSection>
+      </MouseTrail>
 
       {/* SECTION: How We Work */}
       <section id="how-we-work" className="pt-20 pb-10 bg-seaSalt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-10">
             <Animate>
-                <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">The Process</span>
-                <h2 className="text-6xl font-bold text-darkSerpent mb-4">How We Work</h2>
-                <p className="text-darkSerpent/50">Our methodology for high-impact, high-quality data engineering.</p>
+              <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+                <div className="md:w-1/2 text-left">
+                  <p className="text-darkSerpent/60 text-lg leading-relaxed max-w-md">
+                     Our methodology for high-impact, high-quality data engineering.
+                  </p>
+                </div>
+                <div className="md:w-1/2 text-right">
+                  <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-3 block">The Process</span>
+                  <h2 className="text-6xl md:text-6xl font-bold tracking-tighter text-darkSerpent">
+                    How We Work
+                  </h2>
+                </div>
+              </div>
             </Animate>
           </div>
           <ShowcaseSlider />

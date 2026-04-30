@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import SplashScreen from './components/SplashScreen';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -8,6 +8,12 @@ import Careers from './pages/Careers';
 import Navbar from './components/Navbar';
 import Contact from './pages/Contact';
 import Footer from './components/Footer';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 export default function App() {
   const [progress, setProgress] = useState(0);
@@ -82,6 +88,7 @@ export default function App() {
       {/* 2. THE ACTUAL WEBSITE: Renders normally once entered */}
       {hasEntered && (
         <div className="relative z-30 animate-in fade-in duration-700">
+          <ScrollToTop />
           <Navbar />
           <main>
             <Routes>

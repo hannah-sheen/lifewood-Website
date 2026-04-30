@@ -1,8 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
-import { Volume2, VolumeX, Sparkles} from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import ContactButton from '../components/ContactButton.tsx';
 import Animate from '../components/Animate.tsx';
-import { useTrail, TrailParticles } from '../hooks/useTrail.tsx';
 import lifewoodRoundLogo from '../assets/lifewood-round-logo.png';
 import googleLogo from '../assets/google.avif';
 import microsoftLogo from '../assets/microsoft.avif';
@@ -11,6 +10,7 @@ import ancestryLogo from '../assets/ancestry.avif';
 import familysearchLogo from '../assets/familysearch.avif';
 import byuLogo from '../assets/byu.avif';
 import mooreLogo from '../assets/moore.avif';
+import MouseTrail from '../components/MouseTrail.tsx';
 
 interface HomeProps {
   playVideoRef: React.MutableRefObject<(() => void) | null>;
@@ -32,20 +32,6 @@ const STATS = [
   { num: '50+', label: 'Languages & Dialects', desc: 'Our diverse team of native speakers covers 50+ languages and dialects, enabling precise, nuanced data annotation that reflects the richness of human communication.' },
   { num: '56,000+', label: 'Global Online Resources', desc: 'A powerful network of over 56,000 online contributors gives Lifewood the flexibility and scale to handle any data project — no matter the size, scope, or complexity.' },
 ];
-
-function TrailSection({ id, bg, glowColor, children, className = '' }: {
-  id?: string; bg: string; glowColor: string; children: React.ReactNode; className?: string;
-}) {
-  const { ref, trails, glow, onMouseMove } = useTrail();
-  return (
-    <div id={id} ref={ref} onMouseMove={onMouseMove} className={`relative overflow-hidden cursor-none ${bg} ${className}`}>
-      <div className="absolute inset-0 pointer-events-none transition-all duration-75"
-        style={{ background: `radial-gradient(500px circle at ${glow.x}% ${glow.y}%, ${glowColor}, transparent 60%)` }} />
-      <TrailParticles trails={trails} />
-      <div className="relative z-10">{children}</div>
-    </div>
-  );
-}
 
 export default function Home({ playVideoRef }: HomeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -114,12 +100,7 @@ export default function Home({ playVideoRef }: HomeProps) {
       {/* CONTENT */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center w-full">
         <Animate>
-          <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-sm px-5 py-2 rounded-full border border-white/10 mb-8">
-            <Sparkles className="w-3.5 h-3.5 text-saffaron" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
-              Intelligence with Purpose
-            </span>
-          </div>
+            <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Intelligence with Purpose</span>
         </Animate>
 
         <Animate delay={100}>
@@ -153,11 +134,11 @@ export default function Home({ playVideoRef }: HomeProps) {
     </section>
 
       {/* ABOUT */}
-      <TrailSection id="about" bg="bg-white" glowColor="rgba(255,179,71,0.06)" className="py-24">
+      <MouseTrail id="about" bg="bg-white" glowColor="rgba(255,179,71,0.06)" className="py-24">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <Animate>
-              <span className="inline-block px-4 py-1.5 bg-paper text-castletonGreen text-sm font-medium rounded-full mb-6">About Us</span>
+              <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">About Us</span>
               <h2 className="text-5xl font-semibold leading-tight mb-8">We bring big data to life</h2>
               <p className="text-lg text-darkSerpent/80 leading-relaxed">
                 At Lifewood we empower our company and our clients to realize the transformative power of AI:
@@ -183,7 +164,7 @@ export default function Home({ playVideoRef }: HomeProps) {
             </Animate>
           </div>
         </div>
-      </TrailSection>
+      </MouseTrail>
 
       {/* GLOBAL FOOTPRINT */}
       <section id="global" className="py-24 relative overflow-hidden">
@@ -238,29 +219,40 @@ export default function Home({ playVideoRef }: HomeProps) {
       </section>
 
       {/* INNOVATION */}
-      <TrailSection id="innovation" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-32">
+      <MouseTrail id="innovation" bg="bg-darkSerpent" glowColor="rgba(255,179,71,0.12)" className="py-20">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <Animate>
-            <h2 className="text-6xl md:text-7xl font-semibold text-white leading-tight mb-8">
-              Constant Innovation:<br /><span className="text-saffaron">Unlimited Possibilities</span>
+            {/* Editorial Header: Tight tracking and leading for a modern tech feel */}
+            <h2 className="text-6xl md:text-[5.5rem] font-bold text-white leading-[0.9] tracking-tighter mb-10">
+              Constant Innovation:<br />
+              <span className="text-white/20 italic">Unlimited</span> <span className="text-saffaron">Possibilities.</span>
             </h2>
           </Animate>
+          
           <Animate delay={150}>
-            <p className="text-white/50 text-lg max-w-3xl mx-auto leading-relaxed">
-              No matter the industry, size or the type of data involved, our solutions are capable of satisfying any AI-data processing requirement.
+            {/* Refined Paragraph: Slightly larger text with better weight for readability */}
+            <p className="text-white/40 text-xl max-w-3xl mx-auto leading-relaxed font-medium">
+              No matter the industry, size, or the type of data involved, our solutions are capable of satisfying any 
+              <span className="text-white"> AI-data processing requirement</span> at a global scale.
             </p>
           </Animate>
+          
           <Animate delay={250}>
-            <div className="mt-16 flex items-center justify-center gap-4">
-              <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-saffaron" />
-              <span className="text-saffaron text-sm font-semibold tracking-widest uppercase">Global</span>
-              <span className="text-white/30 text-sm">+</span>
-              <span className="text-white/50 text-sm">AI Data Projects at Scale</span>
-              <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-saffaron" />
+            <div className="mt-20 flex items-center justify-center gap-6">
+              <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-saffaron/50 to-saffaron" />
+              
+              {/* Metadata Styling: Black weight and wide tracking for a technical aesthetic */}
+              <div className="flex items-center gap-3">
+                <span className="text-saffaron text-[11px] font-black tracking-[0.2em] uppercase">Global</span>
+                <span className="text-white/20 text-xs">+</span>
+                <span className="text-white/60 text-[11px] font-black tracking-[0.2em] uppercase">AI Data Projects at Scale</span>
+              </div>
+              
+              <div className="h-[1px] w-24 bg-gradient-to-l from-transparent via-saffaron/50 to-saffaron" />
             </div>
           </Animate>
         </div>
-      </TrailSection>
+      </MouseTrail>
 
       {/* CASE STUDIES */}
       <section className="py-24 bg-white">
