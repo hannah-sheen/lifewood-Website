@@ -21,11 +21,6 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleNav = (path: string) => {
-    navigate(path);
-    setMenuOpen(false);
-  };
-
   return (
     <nav className="bg-seaSalt sticky top-0 z-50 shadow-md border-b border-darkSerpent/5">
 
@@ -37,7 +32,7 @@ export default function Navbar() {
           src={lifewoodLogo}
           alt="Lifewood"
           className="shrink-0 cursor-pointer opacity-95 hover:opacity-100 transition-opacity h-8 w-auto"
-          onClick={() => handleNav('/')}
+          onClick={() => navigate('/')}
         />
 
         {/* Nav Links */}
@@ -47,7 +42,7 @@ export default function Navbar() {
             return (
               <div
                 key={path}
-                onClick={() => handleNav(path)}
+                onClick={() => navigate(path)}
                 className="group relative inline-flex flex-col items-center cursor-pointer gap-1.5 py-1"
               >
                 <span className={`text-sm whitespace-nowrap transition-colors duration-200 ${
@@ -68,7 +63,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {/* Login Button */}
           <button
-            onClick={() => handleNav('/login')}
+            onClick={() => navigate('/login')}
             className={`hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
               isActive('/login')
                 ? 'bg-darkSerpent text-saffaron shadow-lg'
@@ -97,7 +92,7 @@ export default function Navbar() {
         {NAV_ITEMS.map(({ label, path }) => (
           <div
             key={path}
-            onClick={() => handleNav(path)}
+            onClick={() => navigate(path)}
             className={`py-3 text-sm font-medium cursor-pointer border-b border-gray-100 last:border-0 ${
               isActive(path) ? 'text-darkSerpent' : 'text-darkSerpent/60'
             }`}
@@ -106,7 +101,7 @@ export default function Navbar() {
           </div>
         ))}
         <button
-          onClick={() => handleNav('/login')}
+          onClick={() => navigate('/login')}
           className="mt-4 w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-darkSerpent/20 text-darkSerpent text-sm font-semibold hover:bg-darkSerpent hover:text-white transition-all duration-200"
         >
           Get Started
