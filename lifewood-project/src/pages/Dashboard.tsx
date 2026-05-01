@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button.tsx';
 import { PositionForm } from './PositionForm.tsx';
 import lifewoodPaperLogo from '../assets/lifewood-paper-logo.avif';
+import lifewoodRoundLogo from '../assets/lifewood-round-logo.png';
 
 const applicationsData = [
   { id: 1, name: 'John Doe', position: 'Data Engineer', status: 'Pending' },
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
 
   const confirmLogout = () => {
     setShowLogoutModal(false);
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -82,9 +83,12 @@ export default function AdminDashboard() {
           </motion.div>
         </motion.button>
 
-        <h1 className="text-xl font-black text-saffaron mb-12 truncate tracking-widest uppercase">
-          {isCollapsed ? 'L' : 'Lifewood'}
-        </h1>
+        <div className="mb-12 flex items-center justify-center">
+          {isCollapsed
+            ? <img src={lifewoodRoundLogo} alt="Lifewood" className="w-14 h-14 object-contain" />
+            : <img src={lifewoodPaperLogo} alt="Lifewood" className="h-8 w-auto object-contain" />
+          }
+        </div>
 
         <nav className="flex-1 space-y-3">
           <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<LayoutGrid size={20} />} label="Dashboard" collapsed={isCollapsed} />
@@ -305,6 +309,8 @@ function ApplicationsView() {
 }
 
 function PositionsView() {
+  const [showForm, setShowForm] = useState(false);
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="flex justify-between items-start mb-8">
@@ -312,10 +318,49 @@ function PositionsView() {
           <h2 className="text-3xl font-bold text-darkSerpent">Manage Positions</h2>
           <p className="text-gray-600 text-sm mt-1">Create and manage job openings</p>
         </div>
-        <Button className="px-6 py-3 rounded-xl text-sm shadow-md">
+        <Button className="px-6 py-3 rounded-xl text-sm shadow-md" onClick={() => setShowForm(true)}>
           <PlusCircle size={18} /> New Position
         </Button>
       </div>
+
+      {/* Side drawer overlay */}
+      <AnimatePresence>
+        {showForm && (
+          <>
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={() => setShowForm(false)}
+            />
+            <motion.div
+              key="drawer"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-seaSalt">
+                <h3 className="text-xl font-bold text-darkSerpent">New Position</h3>
+                <button onClick={() => setShowForm(false)} className="p-2 rounded-lg hover:bg-seaSalt transition-colors">
+                  <X size={20} className="text-gray-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                <PositionForm
+                  isEditMode={false}
+                  onClose={() => setShowForm(false)}
+                  onSubmit={(data) => { console.log(data); setShowForm(false); }}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
           { id: 1, title: 'Lead AI Data Trainer', applicants: 24, posted: '15 days ago' },

@@ -52,17 +52,23 @@ export function PositionForm({ isEditMode, initialData, onClose, onSubmit }: Pos
       {/* Status Toggle */}
       <div>
         <label className="block text-xs font-bold uppercase text-castletonGreen mb-2 tracking-widest">Status</label>
-        <div className="flex gap-4">
+        <div className="flex bg-castletonGreen/70 p-1 rounded-xl border border-gray-200">
           {(['Active', 'Inactive'] as const).map((status) => (
-            <Button
-              key={status}
-              type="button"
-              onClick={() => setFormData({ ...formData, status })}
-              variant={formData.status === status ? 'primary' : 'outline'}
-              className="flex-1 py-3 rounded-xl text-sm"
-            >
-              {status}
-            </Button>
+            <label key={status} className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                className="sr-only"
+                checked={formData.status === status}
+                onChange={() => setFormData({ ...formData, status })}
+              />
+              <div className={`text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                formData.status === status 
+                  ? 'bg-darkSerpent text-white shadow-sm' 
+                  : 'text-white hover:text-darkSerpent'
+              }`}>
+                {status}
+              </div>
+            </label>
           ))}
         </div>
       </div>
@@ -70,19 +76,17 @@ export function PositionForm({ isEditMode, initialData, onClose, onSubmit }: Pos
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
         <Button
-          type="button"
           onClick={onClose}
           variant="outline"
-          className="flex-1 py-3 rounded-xl text-sm"
+          className="flex-1 hover:!bg-darkSerpent hover:!text-white hover:!border-darkSerpent"
         >
           Cancel
         </Button>
         <Button
           type="submit"
-          variant="primary"
-          className="flex-1 py-3 rounded-xl text-sm"
+          className="flex-1 !bg-saffaron !text-darkSerpent hover:!bg-earthYellow"
         >
-          {isEditMode ? 'Update Position' : 'Save Position'}
+          {isEditMode ? 'Update' : 'Save'}
         </Button>
       </div>
     </form>
