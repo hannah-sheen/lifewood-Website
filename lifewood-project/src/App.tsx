@@ -125,7 +125,7 @@ import Solutions from './pages/Solutions';
 import Careers from './pages/Careers';
 import Navbar from './components/Navbar';
 import Contact from './pages/Contact';
-import LoginPage from './pages/Login/Login';
+import LoginPage from './pages/login/Login';
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
 

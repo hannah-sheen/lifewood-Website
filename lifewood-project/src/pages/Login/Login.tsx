@@ -114,7 +114,7 @@ import { useNavigate } from 'react-router-dom';
 import dataTechImg from '../../assets/login/data_tech.jpeg';
 import lifewoodLogo from '../../assets/lifewood-logo.avif';
 import Button from '../../components/Button.tsx';
-import { loginAuth } from './auth.tsx';
+import { loginAuth } from './authService.tsx';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -130,8 +130,6 @@ export default function LoginPage() {
     try {
       const authData = await loginAuth(email, password);
       const userId = authData.user.id; 
-      
-      console.log('User UID:', userId);
       
       navigate('/dashboard');
     } catch (err) {
