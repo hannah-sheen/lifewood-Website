@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import dataTechImg from '../assets/login/data_tech.jpeg';
+import lifewoodLogo from '../assets/lifewood-logo.avif';
+import Button from '../components/Button.tsx';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +13,7 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Logging in with:", email, password);
+    navigate('/dashboard');
   };
 
   return (
@@ -30,8 +34,8 @@ export default function LoginPage() {
         </button>
 
         <div className="mb-10 mt-20 lg:mt-0">
-          <div className="h-12 w-12 bg-darkSerpent rounded-xl mb-6 flex items-center justify-center">
-             <span className="text-saffaron font-bold">LW</span>
+          <div className="mb-6">
+            <img src={lifewoodLogo} alt="Lifewood" className="h-8 w-auto" />
           </div>
           <h1 className="text-3xl font-bold text-darkSerpent tracking-tight">Welcome back</h1>
           <p className="text-darkSerpent/50 mt-2">Enter your credentials to access your dashboard.</p>
@@ -68,12 +72,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button 
-            type="submit"
-            className="w-full bg-darkSerpent text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-darkSerpent/90 transition-transform active:scale-[0.98] shadow-lg shadow-darkSerpent/20"
-          >
+          <Button type="submit" className="w-full py-4 rounded-xl shadow-lg shadow-darkSerpent/20">
             Sign In <ArrowRight className="w-4 h-4" />
-          </button>
+          </Button>
         </form>
 
         <p className="mt-8 text-sm text-center text-darkSerpent/40">
@@ -85,8 +86,8 @@ export default function LoginPage() {
       <div className="hidden lg:block relative flex-1 bg-darkSerpent overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80" 
-            alt="Office Culture" 
+            src={dataTechImg} 
+            alt="Data Technology" 
             className="w-full h-full object-cover opacity-60 grayscale-[20%]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-darkSerpent via-darkSerpent/20 to-transparent" />

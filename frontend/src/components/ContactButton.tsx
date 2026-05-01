@@ -1,15 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import Button from './Button.tsx';
 
 export default function ContactButton() {
   const navigate = useNavigate();
-  
   return (
-    <button 
-      onClick={() => navigate('/contact')}
-      className="bg-castletonGreen hover:bg-darkSerpent text-white px-8 py-3 rounded-2xl font-medium transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-castletonGreen/30"
-    >
-      Contact Us
-      <span className="text-earthYellow">→</span>
-    </button>
+    <Button onClick={() => navigate('/contact')} className="px-8 py-3 rounded-2xl shadow-lg shadow-darkSerpent/20">
+      Contact Us →
+    </Button>
   );
 }

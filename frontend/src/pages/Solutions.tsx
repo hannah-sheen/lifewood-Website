@@ -14,6 +14,7 @@ import genealogy from "../assets/ai projects/genealogy.mp4";
 import machineLearning from "../assets/ai projects/machine_learning.mp4";
 import nlp from "../assets/ai projects/nlp.mp4";
 import Animate from '../components/Animate.tsx';
+import Button from '../components/Button.tsx';
 import { DocumentStack, AudioNode, VisionGrid, VideoLens } from '../components/AIServices.tsx';
 
 
@@ -261,7 +262,7 @@ export default function Solutions() {
             style={{ clipPath: 'polygon(0% 0%, 90% 0%, 100% 100%, 10% 100%)' }}
           >
             {SPECIALIZED_PROJECTS.map((project, i) => {
-              const colors = ['bg-darkSerpent', 'bg-[#0a4530]', 'bg-castletonGreen', 'bg-lightGreen', 'bg-saffaron', 'bg-earthYellow', 'bg-paper'];
+              const colors = ['bg-darkSerpent', 'bg-castletonGreen', 'bg-castletonGreen', 'bg-castletonGreen', 'bg-saffaron', 'bg-earthYellow', 'bg-paper'];
               const bgColor = colors[i % colors.length];
               const isLight = i >= 4;
 

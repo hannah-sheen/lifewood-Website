@@ -5,6 +5,7 @@ import {
   Upload, X, Briefcase, Globe, ArrowLeft, 
   ArrowRight, CheckCircle2 
 } from 'lucide-react';
+import Button from '../components/Button.tsx';
 
 const POSITION_OPTIONS = [
   "Casual Video Models (Video Data Collection)", "Moderator & Voice Participants (Voice Data Collection)",
@@ -213,20 +214,20 @@ export default function ApplicationForm() {
 
                 {/* NAVIGATION BUTTONS */}
                 <div className="flex gap-4 pt-4">
-                {currentStep > 1 && (
-                    <button type="button" onClick={prevStep} className="flex-1 py-4 rounded-2xl bg-darkSerpent/5 text-darkSerpent font-bold flex items-center justify-center gap-2 hover:bg-darkSerpent/10 transition-all">
-                    <ArrowLeft className="w-4 h-4" /> Back
-                    </button>
-                )}
-                {currentStep < 3 ? (
-                    <button type="button" onClick={nextStep} className="flex-[2] py-4 rounded-2xl bg-darkSerpent text-white font-bold flex items-center justify-center gap-2 hover:bg-saffaron hover:text-darkSerpent transition-all">
-                    Next Step <ArrowRight className="w-4 h-4" />
-                    </button>
-                ) : (
-                    <button type="submit" className="flex-[2] py-4 rounded-2xl bg-saffaron text-darkSerpent font-black text-lg shadow-xl shadow-saffaron/20 hover:scale-[1.02] transition-transform">
-                    Submit Application
-                    </button>
-                )}
+                  {currentStep > 1 && (
+                    <Button type="button" onClick={prevStep} variant="outline" className="flex-1 py-4 rounded-2xl text-sm">
+                      <ArrowLeft className="w-4 h-4" /> Back
+                    </Button>
+                  )}
+                  {currentStep < 3 ? (
+                    <Button type="button" onClick={nextStep} className="flex-[2] py-4 rounded-2xl text-sm">
+                      Next Step <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="flex-[2] py-4 rounded-2xl text-sm shadow-xl">
+                      Submit Application
+                    </Button>
+                  )}
                 </div>
             </form>
         </div>

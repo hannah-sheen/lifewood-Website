@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import ContactButton from '../components/ContactButton.tsx';
 import Animate from '../components/Animate.tsx';
+import Button from '../components/Button.tsx';
 import lifewoodRoundLogo from '../assets/lifewood-round-logo.png';
 import googleLogo from '../assets/google.avif';
 import microsoftLogo from '../assets/microsoft.avif';
@@ -85,10 +86,10 @@ export default function Home({ playVideoRef }: HomeProps) {
 
       {/* MUTE TOGGLE */}
       {isHeroVisible && (
-        <button 
-          onClick={() => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } }}
-          className="absolute top-8 right-8 z-20 p-4 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all border border-white/10 group"
-        >
+            <button 
+              onClick={() => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } }}
+              className="absolute top-8 right-8 z-20 p-4 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all border border-white/10 group"
+            >
           {muted ? (
             <VolumeX className="w-5 h-5 text-white/60 group-hover:text-saffaron transition-colors" />
           ) : (
@@ -119,12 +120,13 @@ export default function Home({ playVideoRef }: HomeProps) {
         <Animate delay={300}>
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
             <ContactButton /> {/* Ensure your ContactButton matches the new rounded-2xl style */}
-            <button 
+            <Button
               onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group bg-transparent border border-white/20 hover:border-white/40 text-white px-10 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all backdrop-blur-sm"
+              variant="outline"
+              className="border-white/20 text-white hover:border-saffaron px-10 py-4 rounded-2xl text-sm uppercase tracking-widest backdrop-blur-sm"
             >
               Learn More
-            </button>
+            </Button>
           </div>
         </Animate>
       </div>
@@ -262,9 +264,9 @@ export default function Home({ playVideoRef }: HomeProps) {
             <p className="text-lg text-darkSerpent/70 mb-10">
               Check out our case studies to see our impact, then drop us a line to start your own transformation.
             </p>
-            <button className="bg-castletonGreen text-white px-10 py-4 rounded-2xl font-medium hover:bg-darkSerpent transition-colors">
+            <Button className="px-10 py-4 rounded-2xl">
               Explore Case Studies
-            </button>
+            </Button>
           </Animate>
         </div>
       </section>

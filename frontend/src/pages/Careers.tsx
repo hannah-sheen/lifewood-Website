@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Users, Heart, Lightbulb, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react';
 import ApplicationForm from './ApplicationForm.tsx';
 import Animate from '../components/Animate.tsx';
+import Button from '../components/Button.tsx';
 
 const SECTIONS = [
   { id: 'culture', label: 'Culture' },
@@ -181,13 +182,13 @@ export default function Careers() {
 
             {/* Glow wrapper removed, keeping just the clean button */}
             <div className="relative inline-block">
-              <button 
-                onClick={() => setIsModalOpen(true)} 
-                className="inline-flex items-center gap-6 bg-saffaron text-darkSerpent px-12 py-7 rounded-[2rem] font-black text-xl hover:bg-earthYellow transition-all shadow-xl active:scale-95 group"
-              >
-                <span className="tracking-tight">Join Our Talent Pool</span>
-                <ArrowRight className="w-6 h-6 text-darkSerpent group-hover:translate-x-2 transition-transform duration-300" />
-              </button>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="px-12 py-7 rounded-[2rem] text-xl shadow-xl"
+            >
+              Join Our Talent Pool
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+            </Button>
             </div>
           </Animate>
         </div>
