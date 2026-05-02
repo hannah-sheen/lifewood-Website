@@ -275,7 +275,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left: Video */}
             <Animate>
-              <VideoPlayer src="/src/assets/careers/Lifewood Empowering the Future Through AI 2025.mp4" />
+              <VideoPlayer src="/src/assets/Lifewood Core Values and Culture.mp4" />
             </Animate>
             {/* Right: Text */}
             <Animate delay={150}>

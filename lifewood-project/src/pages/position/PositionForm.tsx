@@ -178,7 +178,7 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
         <input
           required
           type="text"
-          className="w-full p-3 bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
+          className="w-full p-3 text-sm bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           disabled={loading}
@@ -194,7 +194,7 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
         <textarea
           required
           rows={4}
-          className="w-full p-3 bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
+          className="w-full p-3 text-sm bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           disabled={loading}
@@ -208,7 +208,7 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
           Status
         </label>
         <div className="flex bg-castletonGreen/70 p-1 rounded-xl border border-gray-200">
-          {(['Active', 'Inactive'] as const).map((status) => (
+          {(['Open', 'Full'] as const).map((status) => (
             <label key={status} className="flex-1 cursor-pointer">
               <input
                 type="radio"
@@ -252,3 +252,4 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
     </form>
   );
 }
+

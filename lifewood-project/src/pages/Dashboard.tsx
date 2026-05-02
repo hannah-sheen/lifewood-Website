@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings, Bell, Search, PlusCircle, TrendingUp, Users, CheckCircle, Clock, X } from 'lucide-react';
+import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings, Bell, Search, TrendingUp, Users, CheckCircle, Clock, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 bg-white border-b border-gray-100 px-10 flex items-center justify-between shadow-sm">
+        <header className="h-20 bg-white border-b border-gray-100 px-10 flex items-center justify-between shadow-md">
           <div className="relative w-64">
             <Search className="absolute left-3 top-3 text-gray-300" size={18} />
             <input placeholder="Search records..." className="w-full bg-seaSalt p-2.5 pl-10 rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/50 transition-all" />
@@ -139,6 +139,7 @@ export default function AdminDashboard() {
         isDangerous={true}
         onConfirm={confirmLogout}
         onCancel={() => setShowLogoutModal(false)}
+        loadingText='Loging out..'
       />
     </div>
   );

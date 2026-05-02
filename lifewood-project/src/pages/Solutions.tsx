@@ -14,7 +14,6 @@ import genealogy from "../assets/ai projects/genealogy.mp4";
 import machineLearning from "../assets/ai projects/machine_learning.mp4";
 import nlp from "../assets/ai projects/nlp.mp4";
 import Animate from '../components/Animate.tsx';
-import Button from '../components/Button.tsx';
 import { DocumentStack, AudioNode, VisionGrid, VideoLens } from '../components/AIServices.tsx';
 
 

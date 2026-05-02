@@ -6,6 +6,7 @@ interface ConfirmationModalProps {
   title: string;
   message: string;
   buttonName?: string;
+  loadingText?: string; // Add this
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
@@ -13,10 +14,11 @@ interface ConfirmationModalProps {
 }
 
 export default function ConfirmationModal({
-isOpen,
+  isOpen,
   title,
   message,
   buttonName = 'Confirm',
+  loadingText = 'Processing...', // Default fallback
   onConfirm,
   onCancel,
   isLoading = false,
@@ -42,7 +44,7 @@ isOpen,
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCancel}
-            className="fixed inset-0 bg-[#133020]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-darkSerpent/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
             {/* Modal Content */}
             <motion.div
@@ -52,7 +54,7 @@ isOpen,
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
               className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
             >
-              <h3 className="text-xl font-bold text-[#133020] mb-3">{title}</h3>
+              <h3 className="text-xl font-bold text-darkSerpent mb-3">{title}</h3>
               <p className="text-gray-600 mb-8">{message}</p>
 
               <div className="flex gap-3 justify-end">
@@ -69,10 +71,11 @@ isOpen,
                   className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
                     isDangerous
                       ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-[#FFB347] text-[#133020] hover:bg-[#FFC370]'
+                      : 'bg-saffaron text-darkSerpent hover:bg-earthYellow'
                   } disabled:opacity-50`}
                 >
-                  {isLoading ? 'Processing...' : buttonName}
+                  {/* Now uses your dynamic loadingText prop */}
+                  {isLoading ? loadingText : buttonName}
                 </button>
               </div>
             </motion.div>
