@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Users, Heart, Lightbulb, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react';
-import ApplicationForm from './ApplicationForm.tsx';
+import ApplicationForm from './application/ApplicationForm.tsx';
 import Animate from '../components/Animate.tsx';
-import Button from '../components/Button.tsx';
+import ApplicationChecker from './application/ApplicationChecker.tsx';
 
 const SECTIONS = [
   { id: 'culture', label: 'Culture' },
@@ -33,6 +33,13 @@ const CULTURE_VALUES = [
 
 export default function Careers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'apply' | 'check'>('apply');
+
+  // Helper to open modal with a specific mode
+  const openModal = (mode: 'apply' | 'check') => {
+    setModalMode(mode);
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     if (isModalOpen) {
@@ -58,34 +65,28 @@ export default function Careers() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8">
-            {/* Backdrop with heavy blur */}
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-darkSerpent/90 backdrop-blur-xl"
             />
             
-            {/* Expanded Modal Container */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              /* Reduced bottom padding from pb-48 to pb-20 */
               className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white rounded-[3.5rem] shadow-2xl no-scrollbar p-10 md:p-20 pb-20"
             >
-              {/* Close Button - High Z-index to stay above form elements */}
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-8 right-8 z-[310] p-3 rounded-full bg-seaSalt text-darkSerpent hover:bg-saffaron hover:scale-110 transition-all shadow-sm"
+                className="absolute top-8 right-8 z-[310] p-3 rounded-full bg-seaSalt text-darkSerpent hover:bg-saffaron transition-all"
               >
                 <X className="w-6 h-6" />
               </button>
 
-              {/* Centered Form Wrapper - prevents inputs from becoming too wide on large screens */}
               <div className="max-w-3xl mx-auto">
-                <ApplicationForm />
+                {/* Dynamic Content Switching */}
+                {modalMode === 'apply' ? <ApplicationForm /> : <ApplicationChecker />}
               </div>
             </motion.div>
           </div>
@@ -162,33 +163,44 @@ export default function Careers() {
       </section>
 
       {/* 3. JOIN US CTA SECTION */}
-      <section id="join" className="pb-20 pt-10 bg-white relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+      <section id="join" className="py-32 bg-white relative">
+        <div className="max-w-4xl mx-auto px-6">
           <Animate>
-            <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-3 block">
-              Become Part of the Mission
-            </span>
-            
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-darkSerpent mb-8 leading-[0.95]">
-              Ready to help shape <br /> 
-              <span className="text-darkSerpent/30 italic underline decoration-saffaron/40 decoration-8 underline-offset-[12px]">
-                the future of AI?
-              </span>
-            </h2>
-            
-            <p className="text-darkSerpent/60 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-              We are constantly seeking talented individuals across Data Engineering, AI Operations, and Linguistic Research. Share your profile with us today.
-            </p>
+            <div className="text-center mb-15">
+              <span className="text-saffaron font-bold text-[10px] uppercase tracking-[0.3em] mb-6 block">Talent Acquisition</span>
+              <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-darkSerpent leading-[0.9]">
+                Shape the <br /><span className="text-darkSerpent/20 italic">Future.</span>
+              </h2>
+            </div>
 
-            {/* Glow wrapper removed, keeping just the clean button */}
-            <div className="relative inline-block">
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className="px-12 py-7 rounded-[2rem] text-xl shadow-xl"
-            >
-              Join Our Talent Pool
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </Button>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-10">
+              <button
+                onClick={() => openModal('apply')} // Changed to openModal
+                className="group flex flex-row md:flex-col items-center gap-6 md:gap-6 flex-1 w-full md:justify-center"
+              >
+                <div className="w-20 h-20 rounded-3xl bg-darkSerpent text-white flex items-center justify-center group-hover:bg-saffaron transition-colors duration-300 shadow-md shadow-darkSerpent/20">
+                  <ArrowRight className="w-7 h-7 rotate-[-45deg]" />
+                </div>
+                <div className="text-left md:text-center space-y-1">
+                  <h4 className="text-lg font-bold text-darkSerpent">Join Our Talent Pool</h4>
+                  <p className="text-xs text-saffaron font-bold uppercase tracking-widest">Apply Now</p>
+                </div>
+              </button>
+
+              <div className="hidden md:block w-px h-24 bg-darkSerpent/10" />
+
+              <button 
+                onClick={() => openModal('check')} // Changed to openModal
+                className="group flex flex-row md:flex-col items-center gap-6 md:gap-6 flex-1 w-full md:justify-center"
+              >
+                <div className="w-20 h-20 rounded-3xl bg-white border border-darkSerpent/20 text-darkSerpent/60 flex items-center justify-center group-hover:border-earthYellow group-hover:text-saffaron transition-all duration-300">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <div className="text-left md:text-center space-y-1">
+                  <h4 className="text-lg font-bold text-darkSerpent">Check Application</h4>
+                  <p className="text-xs text-saffaron font-bold uppercase tracking-widest">Existing Candidates</p>
+                </div>
+              </button>
             </div>
           </Animate>
         </div>

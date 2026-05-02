@@ -12,6 +12,7 @@ import familysearchLogo from '../assets/familysearch.avif';
 import byuLogo from '../assets/byu.avif';
 import mooreLogo from '../assets/moore.avif';
 import MouseTrail from '../components/MouseTrail.tsx';
+import { motion } from 'framer-motion';
 
 interface HomeProps {
   playVideoRef: React.MutableRefObject<(() => void) | null>;
@@ -256,18 +257,35 @@ export default function Home({ playVideoRef }: HomeProps) {
         </div>
       </MouseTrail>
 
-      {/* CASE STUDIES */}
-      <section className="py-24 bg-white">
+      {/* TAGLINE */}
+    <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <Animate>
-            <h2 className="text-4xl font-semibold mb-6">Real challenges, proven solutions</h2>
-            <p className="text-lg text-darkSerpent/70 mb-10">
-              Check out our case studies to see our impact, then drop us a line to start your own transformation.
+            <h2 className="text-4xl font-semibold mb-6">Always switched on, never off.</h2>
+            <p className="text-lg text-darkSerpent/70 mb-16">
+              Bridging local expertise with global AI infrastructure to empower the world, around the clock.
             </p>
-            <Button className="px-10 py-4 rounded-2xl">
-              Explore Case Studies
-            </Button>
           </Animate>
+        </div>
+
+        {/* Full-width container */}
+        <div className="w-screen overflow-hidden flex font-['Manrope',sans-serif]">
+          <motion.div 
+            className="flex gap-20 whitespace-nowrap"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
+          >
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex items-center gap-12 shrink-0">
+                {/* Alternating text colors */}
+                <span className={`text-6xl font-black uppercase tracking-tighter ${i % 2 === 0 ? 'text-darkSerpent/15' : 'text-saffaron/25'}`}>
+                  Be Amazed
+                </span>
+                {/* Saffaron decorative dot */}
+                <div className="w-4 h-4 rounded-full bg-earthYellow" />
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
     </>

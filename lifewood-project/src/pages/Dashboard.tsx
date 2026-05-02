@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings, Bell, Search, TrendingUp, Users, CheckCircle, Clock, X } from 'lucide-react';
+import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings, Bell, Search, TrendingUp, Users, CheckCircle, Clock} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ConfirmationModal from '../components/ConfirmationModal';
