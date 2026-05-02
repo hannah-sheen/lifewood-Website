@@ -8,6 +8,7 @@ export async function fetchPositions() {
     .order('id', { ascending: true });
   
   if (error) throw new Error(error.message);
+  
   return data;
 }
 

@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import type { ApplicationFormData } from '../types';
+import type { ApplicationFormData, ApplicationDetails } from '../types';
 
 export async function uploadResume(file: File): Promise<string> {
   const timestamp = Date.now();
@@ -240,4 +240,99 @@ export async function getApplicationDetails(applicationId: string) {
     },
     logs: formattedLogs
   };
+}
+
+export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
+  const { data: applications, error: applicationsError } = await supabase
+    .from('application')
+    .select(`
+      id,
+      date_submitted,
+      applicant:apl_id (
+        id,
+        fname,
+        lname,
+        gender,
+        dob,
+        email,
+        phone,
+        address,
+        country,
+        resume
+      ),
+      position:pos_id (
+        id,
+        title,
+        description
+      )
+    `)
+    .order('date_submitted', { ascending: false });
+
+  if (applicationsError) {
+    console.error('Error fetching applications:', applicationsError);
+    throw new Error('Failed to fetch applications');
+  }
+
+  // Process each application to get logs and format data
+  const applicationsWithDetails = await Promise.all(
+    (applications || []).map(async (app: any) => {
+      // Fetch logs for this application
+      const { data: logsData, error: logsError } = await supabase
+        .from('application_log')
+        .select('*')
+        .eq('app_id', app.id)
+        .order('datetime', { ascending: true });
+
+      if (logsError) {
+        console.error('Error fetching logs for application:', app.id, logsError);
+      }
+
+      // Handle applicant data (it might be an array from the join)
+      const applicantData = Array.isArray(app.applicant) 
+        ? app.applicant[0] 
+        : app.applicant;
+
+      // Handle position data (it might be an array from the join)
+      const positionData = Array.isArray(app.position) 
+        ? app.position[0] 
+        : app.position;
+
+      // Get current status from the latest log
+      const logs = logsData || [];
+      const currentStatus = logs.length > 0 
+        ? logs[logs.length - 1].status 
+        : 'Pending';
+
+      // Format logs for display
+      const formattedLogs = logs.map(log => ({
+        status: log.status,
+        datetime: log.datetime
+      }));
+
+      return {
+        applicationId: app.id,
+        dateSubmitted: app.date_submitted,
+        status: currentStatus,
+        applicant: {
+          firstname: applicantData?.fname || '',
+          lastname: applicantData?.lname || '',
+          dob: applicantData?.dob || '',
+          gender: applicantData?.gender || '',
+          email: applicantData?.email || '',
+          phone: applicantData?.phone || '',
+          address: applicantData?.address || '',
+          country: applicantData?.country || '',
+          resume: applicantData?.resume || null
+        },
+        position: {
+          id: positionData?.id || 0,
+          title: positionData?.title || '',
+          description: positionData?.description || ''
+        },
+        logs: formattedLogs
+      };
+    })
+  );
+
+  return applicationsWithDetails;
 }

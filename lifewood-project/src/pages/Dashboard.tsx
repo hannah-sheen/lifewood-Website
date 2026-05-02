@@ -7,19 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import lifewoodPaperLogo from '../assets/lifewood-paper-logo.avif';
 import lifewoodRoundLogo from '../assets/lifewood-round-logo.png';
 import Position from './position/Positions';
-
-const applicationsData = [
-  { id: 1, name: 'John Doe', position: 'Data Engineer', status: 'Pending' },
-  { id: 2, name: 'Jane Smith', position: 'AI Trainer', status: 'Shortlisted' },
-  { id: 3, name: 'Marcus Aurelius', position: 'Data Analyst', status: 'Hired' },
-  { id: 4, name: 'Elena Gilbert', position: 'Linguistics Expert', status: 'Declined' },
-  { id: 5, name: 'Sam Wilson', position: 'Data Engineer', status: 'Pending' },
-  { id: 6, name: 'Bruce Wayne', position: 'Security Lead', status: 'Shortlisted' },
-  { id: 7, name: 'Diana Prince', position: 'Strategy Consultant', status: 'Hired' },
-  { id: 8, name: 'Clark Kent', position: 'Data Entry', status: 'Withdraw' },
-  { id: 9, name: 'Barry Allen', position: 'AI Trainer', status: 'Pending' },
-  { id: 10, name: 'Arthur Curry', position: 'Researcher', status: 'Pending' },
-];
+import Applications from './application/Applications';
 
 const weeklyApplicationsData = [
   { day: 'Mon', applications: 40, hired: 8 },
@@ -114,20 +102,23 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-10">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {activeTab === 'dashboard' && <DashboardView />}
-              {activeTab === 'applications' && <ApplicationsView />}
-              {activeTab === 'positions' && <Position />}
-            </motion.div>
-          </AnimatePresence>
+        <main className="flex-1 overflow-hidden p-10">
+          <div className="h-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                {activeTab === 'dashboard' && <DashboardView />}
+                {activeTab === 'applications' && <Applications />}
+                {activeTab === 'positions' && <Position />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
       </div>
 
@@ -264,47 +255,4 @@ function DashboardView() {
   );
 }
 
-function ApplicationsView() {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-darkSerpent">Applications</h2>
-        <p className="text-gray-600 text-sm mt-1">Review and manage all job applications</p>
-      </div>
-      <div className="bg-white rounded-2xl border border-seaSalt overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-        <table className="w-full text-left">
-          <thead className="bg-seaSalt text-[11px] uppercase text-castletonGreen tracking-wider font-bold border-b border-gray-200">
-            <tr>
-              <th className="p-6">Applicant</th>
-              <th className="p-6">Position</th>
-              <th className="p-6">Status</th>
-              <th className="p-6">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applicationsData.map((app) => (
-              <tr key={app.id} className="border-t border-seaSalt hover:bg-seaSalt/50 transition-colors">
-                <td className="p-6 font-bold text-sm text-darkSerpent">{app.name}</td>
-                <td className="p-6 text-sm text-gray-600">{app.position}</td>
-                <td className="p-6">
-                  <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-colors ${
-                    app.status === 'Hired' ? 'bg-castletonGreen/15 text-castletonGreen' :
-                    app.status === 'Shortlisted' ? 'bg-castletonGreen/10 text-castletonGreen' :
-                    app.status === 'Declined' ? 'bg-red-100 text-red-700' :
-                    'bg-saffaron/20 text-saffaron'
-                  }`}>
-                    {app.status}
-                  </span>
-                </td>
-                <td className="p-6">
-                  <button className="text-castletonGreen font-semibold text-xs hover:underline underline-offset-2 transition-colors cursor-pointer">View</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </motion.div>
-  );
-}
 

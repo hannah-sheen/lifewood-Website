@@ -3,6 +3,8 @@ import { Loader2, Clock, FileText, User, Mail, Phone, Calendar, MapPin } from 'l
 import Button from '../../components/Button';
 import { getApplicationDetails } from './applicationServices';
 import type { ApplicationDetails } from '../types';
+import { formatDateTime } from '../../helpers/datetime';
+// import ConfirmationModal from '../../components/ConfirmationModal';
 
 
 export default function ApplicationChecker() {
@@ -59,7 +61,7 @@ export default function ApplicationChecker() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-2">
       {/* FORM TITLE */}
       <div className="flex flex-col gap-1">
         <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">
@@ -78,9 +80,9 @@ export default function ApplicationChecker() {
           value={appId}
           onChange={(e) => setAppId(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="flex-1 px-4 py-3 text-sm rounded-xl bg-seaSalt border border-darkSerpent/10 focus:border-saffaron outline-none transition-all"
+          className="flex-1 px-4 text-sm rounded-xl bg-seaSalt border border-darkSerpent/10 focus:border-saffaron outline-none transition-all"
         />
-        <Button onClick={handleCheck} disabled={loading || !appId} className="px-6 py-3 text-sm rounded-xl">
+        <Button onClick={handleCheck} disabled={loading || !appId} className="text-sm rounded-xl">
           {loading ? <Loader2 className="animate-spin w-4 h-4" /> : 'Search'}
         </Button>
       </div>
@@ -93,7 +95,7 @@ export default function ApplicationChecker() {
       )}
 
       {/* Result Section */}
-      <div className="border border-darkSerpent/10 rounded-2xl p-6">
+      <div className="border border-darkSerpent/10 rounded-2xl p-4">
         {!data && !loading && !error && (
           <p className="text-sm text-darkSerpent/40 text-center py-8">
             Application details will appear here
@@ -120,8 +122,8 @@ export default function ApplicationChecker() {
                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(data.status)}`}>
                   {data.status}
                 </span>
-                <p className="text-[9px] text-darkSerpent/30 mt-2">
-                  Submitted: {new Date(data.dateSubmitted).toLocaleDateString()}
+                <p className="text-xs text-darkSerpent/30 mt-2">
+                  Submitted: {formatDateTime(data.dateSubmitted)}
                 </p>
               </div>
             </div>
@@ -147,84 +149,82 @@ export default function ApplicationChecker() {
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[200px]">
-              {activeTab === 'details' ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                        <Mail className="w-3 h-3" /> Email
-                      </p>
-                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.email}</p>
+            <div className="pt-4">
+                {activeTab === 'details' ? (
+                    <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                        <div>
+                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                            <Mail className="w-3 h-3" /> Email
+                        </p>
+                        <p className="text-sm font-medium text-darkSerpent truncate">{data.applicant.email}</p>
+                        </div>
+                        <div>
+                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                            <Phone className="w-3 h-3" /> Phone
+                        </p>
+                        <p className="text-sm font-medium text-darkSerpent">{data.applicant.phone}</p>
+                        </div>
+                        <div>
+                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> Date of Birth
+                        </p>
+                        <p className="text-sm font-medium text-darkSerpent">
+                            {new Date(data.applicant.dob).toLocaleDateString()}
+                        </p>
+                        </div>
+                        <div>
+                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest">Gender</p>
+                        <p className="text-sm font-medium text-darkSerpent">{data.applicant.gender}</p>
+                        </div>
+                        <div className="col-span-2">
+                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                            <MapPin className="w-3 h-3" /> Address
+                        </p>
+                        <p className="text-sm font-medium text-darkSerpent leading-snug">{data.applicant.address}</p>
+                        </div>
                     </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                        <Phone className="w-3 h-3" /> Phone
-                      </p>
-                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> Date of Birth
-                      </p>
-                      <p className="text-sm font-medium text-darkSerpent">
-                        {new Date(data.applicant.dob).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                        Gender
-                      </p>
-                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.gender}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> Address
-                      </p>
-                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.address}</p>
-                    </div>
-                  </div>
-                  
-                  {data.applicant.resume && (
-                    <div className="pt-2">
-                      <a 
+                    
+                    {data.applicant.resume && (
+                        <a 
                         href={data.applicant.resume} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-xs text-saffaron hover:underline inline-flex items-center gap-1"
-                      >
+                        className="text-xs text-saffaron hover:underline inline-flex items-center gap-1 font-bold pt-1"
+                        >
                         <FileText className="w-3 h-3" /> View Resume
-                      </a>
+                        </a>
+                    )}
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {data.logs.length === 0 ? (
-                    <p className="text-sm text-darkSerpent/40 text-center py-8">No timeline updates yet</p>
-                  ) : (
+                ) : (
+                   <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-darkSerpent/10 scrollbar-track-transparent">
+                     {data.logs.length === 0 ? (
+                    <p className="text-sm text-darkSerpent/40 text-center py-4">No timeline updates yet</p>
+                    ) : (
                     data.logs.map((log, i) => (
-                      <div key={i} className="flex justify-between items-center border-b border-darkSerpent/5 pb-3">
+                        <div key={i} className="flex justify-between items-center border-b border-darkSerpent/5 pb-2 last:border-0">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-saffaron" />
-                          <span className="text-sm font-medium text-darkSerpent/80">{log.status}</span>
+                            <div className="w-2 h-2 rounded-full bg-saffaron" />
+                            <span className="text-xs font-medium text-darkSerpent/80">{log.status}</span>
                         </div>
-                        <span className="text-darkSerpent/30 text-[11px]">{log.datetime}</span>
-                      </div>
+                        <span className="text-darkSerpent/30 text-xs whitespace-nowrap ml-4">
+                            {formatDateTime(log.datetime)}
+                        </span>
+                        </div>
                     ))
-                  )}
+                    )}
                 </div>
-              )}
-            </div>
+                )}
+                </div>
 
             {/* Footer Action - Withdraw button if pending */}
-            {data.status === 'Pending' && (
-              <div className="pt-4 border-t border-darkSerpent/5">
+            {/* {data.status === 'Pending' && ( */}
+              {/* <div className="pt-4 border-t border-darkSerpent/5">
                 <button className="text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-widest transition-colors">
                   Withdraw Application
                 </button>
-              </div>
-            )}
+              </div> */}
+            {/* )} */}
           </div>
         )}
       </div>
