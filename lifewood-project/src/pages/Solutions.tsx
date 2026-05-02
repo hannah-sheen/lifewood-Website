@@ -94,7 +94,7 @@ export default function Solutions() {
       {/* FLOATING NAV */}
       <nav className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-[100] hidden lg:flex flex-col gap-8">
         {SECTIONS.map((s) => (
-          <button key={s.id} onClick={() => scrollToSection(s.id)} className="group flex items-center justify-end gap-4 outline-none">
+          <button key={s.id} onClick={() => scrollToSection(s.id)} className="group flex items-center justify-end gap-4 outline-none cursor-pointer">
             <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md pointer-events-none translate-x-2 group-hover:translate-x-0">
               {s.label}
             </span>
@@ -261,7 +261,7 @@ export default function Solutions() {
             style={{ clipPath: 'polygon(0% 0%, 90% 0%, 100% 100%, 10% 100%)' }}
           >
             {SPECIALIZED_PROJECTS.map((project, i) => {
-              const colors = ['bg-darkSerpent', 'bg-castletonGreen', 'bg-castletonGreen', 'bg-castletonGreen', 'bg-saffaron', 'bg-earthYellow', 'bg-paper'];
+              const colors = ['bg-darkSerpent', 'bg-castletonGreen', 'bg-lightGreen', 'bg-pastelGreen', 'bg-saffaron', 'bg-earthYellow', 'bg-paper'];
               const bgColor = colors[i % colors.length];
               const isLight = i >= 4;
 

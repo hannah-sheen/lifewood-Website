@@ -1,44 +1,66 @@
 import { useState } from 'react';
-import { Loader2, Clock} from 'lucide-react';
+import { Loader2, Clock, FileText, User, Mail, Phone, Calendar, MapPin } from 'lucide-react';
 import Button from '../../components/Button';
+import { getApplicationDetails } from './applicationServices';
+import type { ApplicationDetails } from '../types';
 
-const ApplicationCheckerData = (id: string) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        firstname: "Alex",
-        lastname: "Rivera",
-        dob: "1995-05-12",
-        gender: "Non-binary",
-        email: "alex.rivera@example.com",
-        phone: "+63 917 555 0123",
-        position: "AI Data Engineer",
-        status: "Pending",
-        logs: [
-          { status: "Submitted", datetime: "2026-04-28 09:00 AM" },
-          { status: "Under Review", datetime: "2026-04-29 02:30 PM" }
-        ]
-      });
-    }, 1500);
-  });
-}
 
 export default function ApplicationChecker() {
   const [appId, setAppId] = useState('');
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<ApplicationDetails | null>(null);
+  const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'details' | 'logs'>('details');
 
   const handleCheck = async () => {
+    if (!appId.trim()) {
+      setError('Please enter an Application ID');
+      return;
+    }
+
     setLoading(true);
-    const result = await ApplicationCheckerData(appId);
-    setData(result);
-    setLoading(false);
+    setError('');
+    setData(null);
+    
+    try {
+      const result = await getApplicationDetails(appId.trim());
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch application details');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleCheck();
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'bg-saffaron/10 text-saffaron';
+      case 'under review':
+        return 'bg-blue-100 text-blue-700';
+      case 'shortlisted':
+        return 'bg-castletonGreen/10 text-castletonGreen';
+      case 'hired':
+        return 'bg-green-100 text-green-700';
+      case 'declined':
+        return 'bg-red-100 text-red-700';
+      case 'withdrawn':
+        return 'bg-gray-100 text-gray-600';
+      default:
+        return 'bg-gray-100 text-gray-600';
+    }
   };
 
   return (
     <div className="w-full space-y-6">
-      {/* FORM TITLE - RE-ADDED */}
+      {/* FORM TITLE */}
       <div className="flex flex-col gap-1">
         <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">
           Application Status
@@ -52,9 +74,10 @@ export default function ApplicationChecker() {
       <div className="flex gap-3">
         <input
           type="text"
-          placeholder="Enter Application ID"
+          placeholder="Enter Application ID (e.g., APP020526-001)"
           value={appId}
           onChange={(e) => setAppId(e.target.value)}
+          onKeyPress={handleKeyPress}
           className="flex-1 px-4 py-3 text-sm rounded-xl bg-seaSalt border border-darkSerpent/10 focus:border-saffaron outline-none transition-all"
         />
         <Button onClick={handleCheck} disabled={loading || !appId} className="px-6 py-3 text-sm rounded-xl">
@@ -62,73 +85,146 @@ export default function ApplicationChecker() {
         </Button>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Result Section */}
       <div className="border border-darkSerpent/10 rounded-2xl p-6">
-        {!data ? (
-          <p className="text-sm text-darkSerpent/40 text-center py-8">Application details will appear here</p>
-        ) : (
+        {!data && !loading && !error && (
+          <p className="text-sm text-darkSerpent/40 text-center py-8">
+            Application details will appear here
+          </p>
+        )}
+
+        {loading && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="animate-spin w-8 h-8 text-saffaron" />
+          </div>
+        )}
+
+        {data && (
           <div className="space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-bold text-lg">{data.firstname} {data.lastname}</h3>
-                <p className="text-xs text-darkSerpent/50">{data.position}</p>
+                <h3 className="font-bold text-lg text-darkSerpent">
+                  {data.applicant.firstname} {data.applicant.lastname}
+                </h3>
+                <p className="text-sm text-darkSerpent/60 mt-1">{data.position.title}</p>
               </div>
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-earthYellow/10 text-earthYellow uppercase tracking-wider">
-                {data.status}
-              </span>
+              <div className="text-right">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(data.status)}`}>
+                  {data.status}
+                </span>
+                <p className="text-[9px] text-darkSerpent/30 mt-2">
+                  Submitted: {new Date(data.dateSubmitted).toLocaleDateString()}
+                </p>
+              </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-darkSerpent/10">
-              {['details', 'logs'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as 'details' | 'logs')}
-                  className={`pb-2 text-xs font-bold uppercase tracking-widest transition-colors ${
-                    activeTab === tab ? 'text-saffaron border-b-2 border-saffaron' : 'text-darkSerpent/30'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="flex gap-6 border-b border-darkSerpent/10">
+              <button
+                onClick={() => setActiveTab('details')}
+                className={`pb-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${
+                  activeTab === 'details' ? 'text-saffaron border-b-2 border-saffaron' : 'text-darkSerpent/30 hover:text-darkSerpent/60'
+                }`}
+              >
+                <User className="w-3 h-3" /> Personal Details
+              </button>
+              <button
+                onClick={() => setActiveTab('logs')}
+                className={`pb-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${
+                  activeTab === 'logs' ? 'text-saffaron border-b-2 border-saffaron' : 'text-darkSerpent/30 hover:text-darkSerpent/60'
+                }`}
+              >
+                <Clock className="w-3 h-3" /> Application Timeline ({data.logs.length})
+              </button>
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[160px]">
+            <div className="min-h-[200px]">
               {activeTab === 'details' ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: "Email", value: data.email },
-                    { label: "Phone", value: data.phone },
-                    { label: "DOB", value: data.dob },
-                    { label: "Gender", value: data.gender },
-                  ].map((item, i) => (
-                    <div key={i}>
-                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest">{item.label}</p>
-                      <p className="text-sm font-medium text-darkSerpent">{item.value}</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                        <Mail className="w-3 h-3" /> Email
+                      </p>
+                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.email}</p>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> Phone
+                      </p>
+                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Date of Birth
+                      </p>
+                      <p className="text-sm font-medium text-darkSerpent">
+                        {new Date(data.applicant.dob).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                        Gender
+                      </p>
+                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.gender}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> Address
+                      </p>
+                      <p className="text-sm font-medium text-darkSerpent">{data.applicant.address}</p>
+                    </div>
+                  </div>
+                  
+                  {data.applicant.resume && (
+                    <div className="pt-2">
+                      <a 
+                        href={data.applicant.resume} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-saffaron hover:underline inline-flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" /> View Resume
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {data.logs.map((log: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center text-sm border-b border-darkSerpent/5 pb-2">
-                      <span className="flex items-center gap-2 text-darkSerpent/70"><Clock className="w-3 h-3"/> {log.status}</span>
-                      <span className="text-darkSerpent/30 text-[11px]">{log.datetime}</span>
-                    </div>
-                  ))}
+                  {data.logs.length === 0 ? (
+                    <p className="text-sm text-darkSerpent/40 text-center py-8">No timeline updates yet</p>
+                  ) : (
+                    data.logs.map((log, i) => (
+                      <div key={i} className="flex justify-between items-center border-b border-darkSerpent/5 pb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-saffaron" />
+                          <span className="text-sm font-medium text-darkSerpent/80">{log.status}</span>
+                        </div>
+                        <span className="text-darkSerpent/30 text-[11px]">{log.datetime}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Footer Action */}
-            <div className="pt-4 border-t border-darkSerpent/5 flex justify-between items-center">
-              {data.status === 'Pending' && (
-                <button className="text-[11px] font-bold text-red-500 hover:text-red-600 uppercase tracking-widest">Withdraw</button>
-              )}
-              {/* <button onClick={() => setData(null)} className="text-[11px] text-darkSerpent/30 uppercase tracking-widest hover:text-darkSerpent">Close</button> */}
-            </div>
+            {/* Footer Action - Withdraw button if pending */}
+            {data.status === 'Pending' && (
+              <div className="pt-4 border-t border-darkSerpent/5">
+                <button className="text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-widest transition-colors">
+                  Withdraw Application
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

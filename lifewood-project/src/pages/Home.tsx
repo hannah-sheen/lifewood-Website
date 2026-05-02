@@ -89,7 +89,7 @@ export default function Home({ playVideoRef }: HomeProps) {
       {isHeroVisible && (
             <button 
               onClick={() => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } }}
-              className="absolute top-8 right-8 z-20 p-4 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all border border-white/10 group"
+              className="absolute top-8 right-8 z-20 p-4 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all border border-white/10 group cursor-pointer"
             >
           {muted ? (
             <VolumeX className="w-5 h-5 text-white/60 group-hover:text-saffaron transition-colors" />

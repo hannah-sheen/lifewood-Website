@@ -61,14 +61,14 @@ export default function ConfirmationModal({
                 <button
                   onClick={onCancel}
                   disabled={isLoading}
-                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all"
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
                   disabled={isLoading}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                     isDangerous
                       ? 'bg-red-600 text-white hover:bg-red-700'
                       : 'bg-saffaron text-darkSerpent hover:bg-earthYellow'

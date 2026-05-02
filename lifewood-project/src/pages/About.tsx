@@ -192,7 +192,7 @@ function VideoPlayer({ src }: { src: string }) {
   return (
     <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-video bg-darkSerpent/20">
       <video ref={videoRef} autoPlay muted loop playsInline className="w-full h-full object-cover" src={src} />
-      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all">
+      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all cursor-pointer">
         {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
       </button>
     </div>
@@ -424,7 +424,7 @@ export default function About() {
               <button
                 key={i}
                 onClick={() => handleMapFocus(loc)}
-                className={`px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all shadow-sm bg-white active:scale-95 ${
+                className={`px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all shadow-sm bg-white active:scale-95 cursor-pointer ${
                   selectedCountry === loc.name
                     ? 'border-saffaron bg-saffaron text-darkSerpent'
                     : 'border-darkSerpent/10 text-darkSerpent hover:bg-darkSerpent hover:text-white'

@@ -75,7 +75,7 @@ export default function AdminDashboard() {
       >
         <motion.button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-10 bg-saffaron p-1 rounded-full text-darkSerpent z-50 hover:shadow-lg transition-shadow"
+          className="absolute -right-3 top-10 bg-saffaron p-1 rounded-full text-darkSerpent z-50 hover:shadow-lg transition-shadow cursor-pointer"
         >
           <motion.div animate={{ rotate: isCollapsed ? 180 : 0 }} transition={{ duration: 0.3 }}>
             <ChevronLeft size={16} />
@@ -150,7 +150,7 @@ function NavItem({ icon, label, active, onClick, collapsed }: any) {
     <button
       onClick={onClick}
       title={collapsed ? label : ''}
-      className={`relative flex items-center justify-center gap-4 w-full p-3.5 rounded-r-xl transition-colors duration-200 ${active ? 'bg-saffaron/20 text-saffaron font-bold' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+      className={`relative flex items-center justify-center gap-4 w-full p-3.5 rounded-r-xl transition-colors duration-200 cursor-pointer ${active ? 'bg-saffaron/20 text-saffaron font-bold' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
     >
       {active && <div className="absolute left-0 top-2 bottom-2 w-1 bg-saffaron rounded-r-full" />}
       <span className="flex-shrink-0 flex items-center justify-center">{icon}</span>
@@ -297,7 +297,7 @@ function ApplicationsView() {
                   </span>
                 </td>
                 <td className="p-6">
-                  <button className="text-castletonGreen font-semibold text-xs hover:underline underline-offset-2 transition-colors">View</button>
+                  <button className="text-castletonGreen font-semibold text-xs hover:underline underline-offset-2 transition-colors cursor-pointer">View</button>
                 </td>
               </tr>
             ))}

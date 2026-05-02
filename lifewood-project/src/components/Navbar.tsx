@@ -75,7 +75,7 @@ export default function Navbar() {
 
           {/* Hamburger */}
           <button
-            className="lg:hidden p-2 text-darkSerpent"
+            className="lg:hidden p-2 text-darkSerpent cursor-pointer"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <div className={`transition-transform duration-300 ${menuOpen ? 'rotate-90' : 'rotate-0'}`}>
