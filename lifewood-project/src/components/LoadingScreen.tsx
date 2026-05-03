@@ -8,31 +8,31 @@ export function LoadingScreen({
   variant = 'full' 
 }: LoadingScreenProps) {
   // Full-page loading screen
-  if (variant === 'full') {
-    return (
-      <div className="fixed inset-0 bg-seaSalt flex items-center justify-center z-50">
-        <div className="flex flex-col items-center gap-6">
-          {/* Animated Spinner */}
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-4 border-saffaron/20" />
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-saffaron border-r-castletonGreen animate-spin" />
-          </div>
-          
-          {/* Loading Text */}
-          {message && (
-            <div className="text-center">
-              <p className="text-darkSerpent font-medium text-lg">{message}</p>
-              <div className="flex gap-1 mt-3 justify-center">
-                <span className="w-2 h-2 bg-saffaron rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                <span className="w-2 h-2 bg-castletonGreen rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                <span className="w-2 h-2 bg-lightGreen rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-              </div>
-            </div>
-          )}
+ if (variant === 'full') {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="flex flex-col items-center gap-6">
+        {/* Animated Spinner */}
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full border-4 border-saffaron/20" />
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-saffaron border-r-castletonGreen animate-spin" />
         </div>
+        
+        {/* Loading Text */}
+        {message && (
+          <div className="text-center">
+            <p className="text-darkSerpent font-medium text-lg">{message}</p>
+            <div className="flex gap-1 mt-3 justify-center">
+              <span className="w-2 h-2 bg-saffaron rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <span className="w-2 h-2 bg-castletonGreen rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <span className="w-2 h-2 bg-lightGreen rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+            </div>
+          </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Overlay loading (semi-transparent with content underneath)
   if (variant === 'overlay') {

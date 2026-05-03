@@ -8,8 +8,6 @@ export async function uploadResume(file: File): Promise<string> {
   const fileName = `resume_${timestamp}_${randomString}.${fileExt}`;
   const filePath = `resume/${fileName}`;
 
-  console.log('Uploading to path:', filePath); // Debug log
-
   const { error: uploadError } = await supabase.storage
     .from('lifewood')
     .upload(filePath, file, {
@@ -18,15 +16,12 @@ export async function uploadResume(file: File): Promise<string> {
     });
 
   if (uploadError) {
-    console.error('Upload error details:', uploadError);
     throw new Error(`Failed to upload resume: ${uploadError.message}`);
   }
 
   const { data: { publicUrl } } = supabase.storage
     .from('lifewood')
     .getPublicUrl(filePath);
-
-  console.log('Generated public URL:', publicUrl); // Debug log
 
   return publicUrl;
 }
@@ -103,7 +98,6 @@ export async function submitApplication(formData: ApplicationFormData) {
       .single();
     
     if (positionError) {
-      console.error('Position not found:', positionTitle, positionError);
       continue;
     }
     
@@ -135,18 +129,13 @@ export async function submitApplication(formData: ApplicationFormData) {
     .insert(applications);
 
   if (applicationError) {
-    console.error('Application insert error:', applicationError);
     throw new Error('Failed to save applications');
   }
 
   // Insert all application logs
-  const { error: logsError } = await supabase
+  const { error: _logsError } = await supabase
     .from('application_log')
     .insert(applicationLogs);
-
-  if (logsError) {
-    console.error('Application logs insert error:', logsError);
-  }
 
   return { 
     success: true, 
@@ -165,7 +154,6 @@ export async function getApplicationDetails(applicationId: string) {
     .single();
 
   if (applicationError) {
-    console.error('Application fetch error:', applicationError);
     if (applicationError.code === 'PGRST116') {
       throw new Error('Application ID not found');
     }
@@ -173,15 +161,11 @@ export async function getApplicationDetails(applicationId: string) {
   }
 
   // Step 2: Get position details
-  const { data: position, error: positionError } = await supabase
+  const { data: position, error: _positionError } = await supabase
     .from('position')
     .select('*')
     .eq('id', application.pos_id)
     .single();
-
-  if (positionError) {
-    console.error('Position fetch error:', positionError);
-  }
 
   // Step 3: Get applicant details
   const { data: applicant, error: applicantError } = await supabase
@@ -191,20 +175,15 @@ export async function getApplicationDetails(applicationId: string) {
     .single();
 
   if (applicantError) {
-    console.error('Applicant fetch error:', applicantError);
     throw new Error('Applicant not found');
   }
 
   // Step 4: Get application logs
-  const { data: logs, error: logsError } = await supabase
+  const { data: logs, error: _logsError } = await supabase
     .from('application_log')
     .select('*')
     .eq('app_id', applicationId)
     .order('datetime', { ascending: true });
-
-  if (logsError) {
-    console.error('Logs fetch error:', logsError);
-  }
 
   // Format the response
   const formattedLogs = (logs || []).map(log => ({
@@ -269,7 +248,6 @@ export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
     .order('date_submitted', { ascending: false });
 
   if (applicationsError) {
-    console.error('Error fetching applications:', applicationsError);
     throw new Error('Failed to fetch applications');
   }
 
@@ -277,15 +255,11 @@ export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
   const applicationsWithDetails = await Promise.all(
     (applications || []).map(async (app: any) => {
       // Fetch logs for this application
-      const { data: logsData, error: logsError } = await supabase
+      const { data: logsData, error: _logsError } = await supabase
         .from('application_log')
         .select('*')
         .eq('app_id', app.id)
         .order('datetime', { ascending: true });
-
-      if (logsError) {
-        console.error('Error fetching logs for application:', app.id, logsError);
-      }
 
       // Handle applicant data (it might be an array from the join)
       const applicantData = Array.isArray(app.applicant) 
@@ -335,4 +309,24 @@ export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
   );
 
   return applicationsWithDetails;
+}
+
+export async function updateApplicationStatus(applicationId: string, newStatus: string): Promise<void> {
+  // Get the current datetime
+  const currentDateTime = new Date().toISOString();
+  
+  // Insert new log entry
+  const { error: logError } = await supabase
+    .from('application_log')
+    .insert({
+      datetime: currentDateTime,
+      app_id: applicationId,
+      status: newStatus
+    });
+
+  if (logError) {
+    throw new Error('Failed to update application status');
+  }
+  
+  return;
 }
