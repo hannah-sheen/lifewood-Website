@@ -196,7 +196,7 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
 
   const statusOptions = [
     { value: 'Pending', label: 'Pending', color: 'text-saffaron border-saffaron/30 bg-saffaron/5' },
-    { value: 'Under Review', label: 'Under Review', color: 'text-blue-600 border-blue-200 bg-blue-50' },
+    { value: 'Withdrawn', label: 'Withdrawn', color: 'text-blue-600 border-blue-200 bg-blue-50' },
     { value: 'Shortlisted', label: 'Shortlisted', color: 'text-sky-600 border-sky-200 bg-sky-50' },
     { value: 'Hired', label: 'Hired', color: 'text-castletonGreen border-castletonGreen/30 bg-castletonGreen/5' },
     { value: 'Not Selected', label: 'Not Selected', color: 'text-amber-600 border-amber-200 bg-amber-50' },

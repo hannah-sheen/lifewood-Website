@@ -4,12 +4,34 @@ import Animate from '../components/Animate.tsx';
 import Button from '../components/Button.tsx';
 import { Input } from '../components/Input.tsx';
 import { TextArea } from '../components/TextArea.tsx';
+import { showSuccessToast, showErrorToast } from '../components/Toast.tsx';
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      showErrorToast('Please fill in all fields.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      showSuccessToast('Message sent! We\'ll get back to you soon.');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err) {
+      showErrorToast(err instanceof Error ? err.message : 'Failed to send message.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,12 +91,12 @@ export default function Contact() {
               <Animate delay={200}>
                 <form onSubmit={handleSubmit} className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
-                      <Input label="Full Name" type="text" placeholder="John Doe"/>
-                      <Input label="Email Address" type="email" placeholder="john@example.com" />
-                      <TextArea label="How can we help?" rows={4} placeholder="Message here..."/>
+                      <Input label="Full Name" type="text" placeholder="John Doe" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} required />
+                      <Input label="Email Address" type="email" placeholder="john@example.com" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} required />
+                      <TextArea label="How can we help?" rows={4} placeholder="Message here..." value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} required />
                   </div>
-                  <Button type="submit" className="px-12 py-5 rounded-2xl text-sm uppercase tracking-widest shadow-lg">
-                    Send Message <Send className="w-4 h-4" />
+                  <Button type="submit" disabled={loading} className="px-12 py-5 rounded-2xl text-sm uppercase tracking-widest shadow-lg">
+                    {loading ? 'Sending...' : 'Send Message'} <Send className="w-4 h-4" />
                   </Button>
                 </form>
               </Animate>

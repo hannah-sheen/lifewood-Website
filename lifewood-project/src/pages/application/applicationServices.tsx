@@ -280,8 +280,29 @@ export async function submitApplication(formData: ApplicationFormData) {
     applicantId: applicantId,
     isExistingApplicant: !isNewApplicant,
     applicationIds: applications.map(app => app.id),
+    submittedPositions: newApplications.map((app, i) => ({
+      title: app.title,
+      id: applications[i].id
+    })),
     newApplicationsCount: newApplications.length
   };
+}
+
+export async function sendApplicationConfirmation(
+  applicantName: string,
+  applicantEmail: string,
+  positions: string[],
+  applicationIds: string[]
+) {
+  try {
+    await fetch('http://localhost:3001/api/application-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applicantName, applicantEmail, positions, applicationIds }),
+    });
+  } catch (err) {
+    console.warn('Confirmation email failed (non-critical):', err);
+  }
 }
 
 // Get the current status of an application (most recent log)

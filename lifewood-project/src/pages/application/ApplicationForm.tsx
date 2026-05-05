@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, MapPin, Calendar, Search, Upload, X, Briefcase, ArrowLeft, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
 import Button from '../../components/Button.tsx';
 import InputField from '../../components/InputField.tsx';
-import { submitApplication } from './applicationServices.tsx';
+import { submitApplication, sendApplicationConfirmation } from './applicationServices.tsx';
 import type { ApplicationFormData } from '../types';
 import { fetchAvailablePositions } from '../position/positionService.tsx';
 import type { Position } from '../types';
-import { showSuccessToast, showErrorToast, showWarningToast } from '../../components/Toast';
+import { showSuccessToast, showErrorToast } from '../../components/Toast.tsx';
 
 const COUNTRY_OPTIONS = [
   { code: "+1", name: "US/Canada"},
@@ -278,29 +278,26 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
         setStep1Errors({ firstName: '', lastName: '', gender: '', birthDate: '' });
         setStep2Errors({ email: '', phoneNumber: '', address: '' });
         
-        if (onSuccess) {
-          onSuccess(); 
-        }
-        
+        if (onSuccess) onSuccess();
+
+        // Send confirmation email (non-blocking)
+        sendApplicationConfirmation(
+          `${formData.firstName} ${formData.lastName}`,
+          formData.email,
+          result.submittedPositions.map(p => p.title),
+          result.submittedPositions.map(p => p.id)
+        );
+
         showSuccessToast(
-            result.isExistingApplicant 
-              ? 'Additional applications submitted successfully!' 
-              : 'Application submitted successfully!'
-          );
+          result.isExistingApplicant
+            ? 'Additional applications submitted successfully!'
+            : 'Application submitted successfully! Check your email for confirmation.'
+        );
       }
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit application';
-      
-      if (errorMessage.includes('active applications')) {
-        showWarningToast(errorMessage);
-      } else if (errorMessage.includes('email already used')) {
-        showWarningToast(errorMessage);
-      } else if (errorMessage.includes('upload resume')) {
-        showErrorToast(errorMessage);
-      } else {
-        showErrorToast(errorMessage);
-      }
+      showErrorToast(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

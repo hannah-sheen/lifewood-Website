@@ -46,7 +46,7 @@ export default function ApplicationChecker() {
   return (
     <div className="w-full space-y-6">
       {/* Input Section */}
-      <div className="flex gap-3 items-start">
+      <div className="flex gap-3 mt-2 items-start">
         <div className="flex-1">
           <InputField
             type="text"
