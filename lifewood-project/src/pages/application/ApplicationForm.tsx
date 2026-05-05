@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, MapPin, Calendar, Search, Upload, X, Briefcase, ArrowLeft, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
 import Button from '../../components/Button.tsx';
 import InputField from '../../components/InputField.tsx';
 import { submitApplication } from './applicationServices.tsx';
 import type { ApplicationFormData } from '../types';
-import { fetchActivePositions } from '../position/positionService.tsx';
+import { fetchAvailablePositions } from '../position/positionService.tsx';
 import type { Position } from '../types';
+import { showSuccessToast, showErrorToast, showWarningToast } from '../../components/Toast';
 
 const COUNTRY_OPTIONS = [
   { code: "+1", name: "US/Canada"},
@@ -37,8 +38,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
   const [file, setFile] = useState<File | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string}>(COUNTRY_OPTIONS[2]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitError, setSubmitError] = useState<string>('');
-  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   const [positions, setPositions] = useState<Position[]>([]);
   const [loadingPositions, setLoadingPositions] = useState<boolean>(true);
   
@@ -79,10 +78,11 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
   useEffect(() => {
     const loadPositions = async () => {
       try {
-        const data = await fetchActivePositions();
+        const data = await fetchAvailablePositions();
         setPositions(data || []);
       } catch (error) {
         console.error('Failed to load positions:', error);
+        showErrorToast('Failed to load positions. Please refresh the page.');
       } finally {
         setLoadingPositions(false);
       }
@@ -178,7 +178,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
 
   const prevStep = (): void => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-    // Clear errors when going back
     setValidationsTriggered({
       step1: false,
       step2: false,
@@ -186,7 +185,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
     });
     setStep1Errors({ firstName: '', lastName: '', gender: '', birthDate: '' });
     setStep2Errors({ email: '', phoneNumber: '', address: '' });
-    setSubmitError('');
   };
 
   const togglePosition = (position: Position): void => {
@@ -195,10 +193,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
         ? prev.filter(p => p.id !== position.id) 
         : [...prev, position]
     );
-    // Clear step3 error when user selects a position
-    if (validationsTriggered.step3 && selectedPositions.length === 0) {
-      setSubmitError('');
-    }
   };
 
   // Select All positions
@@ -207,10 +201,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
       setSelectedPositions([]);
     } else {
       setSelectedPositions([...positions]);
-    }
-    // Clear step3 error when user selects positions
-    if (validationsTriggered.step3) {
-      setSubmitError('');
     }
   };
 
@@ -231,16 +221,11 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setFile(e.target.files?.[0] || null);
-    if (validationsTriggered.step3 && !file) {
-      setSubmitError('');
-    }
   };
   
-  const handleSubmitButton = () => {
-    // Mark step3 as triggered
+  const handleSubmitButton = async () => {
     setValidationsTriggered(prev => ({ ...prev, step3: true }));
     
-    // Validate all steps
     const isStep1Valid = validateStep1();
     const isStep2Valid = validateStep2();
     const isStep3Valid = selectedPositions.length > 0 && file !== null;
@@ -262,14 +247,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
       return;
     }
     
-    // All validations pass, proceed with submission
-    const e = { preventDefault: () => {} } as FormEvent<HTMLFormElement>;
-    handleSubmit(e);
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    
     setIsSubmitting(true);
     
     const applicationData: ApplicationFormData = {
@@ -289,45 +266,45 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
       const result = await submitApplication(applicationData);
       
       if (result?.success) {
-        setSubmitSuccess(true);
-        if (onSuccess) onSuccess();
+        // Reset form first
+        setCurrentStep(1);
+        setFormData({
+          firstName: '', lastName: '', gender: '', birthDate: '',
+          email: '', phoneNumber: '', address: ''
+        });
+        setSelectedPositions([]);
+        setFile(null);
+        setValidationsTriggered({ step1: false, step2: false, step3: false });
+        setStep1Errors({ firstName: '', lastName: '', gender: '', birthDate: '' });
+        setStep2Errors({ email: '', phoneNumber: '', address: '' });
         
-        setTimeout(() => {
-          setSubmitSuccess(false);
-          setCurrentStep(1);
-          setFormData({
-            firstName: '', lastName: '', gender: '', birthDate: '',
-            email: '', phoneNumber: '', address: ''
-          });
-          setSelectedPositions([]);
-          setFile(null);
-          setValidationsTriggered({ step1: false, step2: false, step3: false });
-          setStep1Errors({ firstName: '', lastName: '', gender: '', birthDate: '' });
-          setStep2Errors({ email: '', phoneNumber: '', address: '' });
-        }, 2000);
+        if (onSuccess) {
+          onSuccess(); 
+        }
+        
+        showSuccessToast(
+            result.isExistingApplicant 
+              ? 'Additional applications submitted successfully!' 
+              : 'Application submitted successfully!'
+          );
       }
     } catch (error) {
       console.error('Submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit application';
+      
+      if (errorMessage.includes('active applications')) {
+        showWarningToast(errorMessage);
+      } else if (errorMessage.includes('email already used')) {
+        showWarningToast(errorMessage);
+      } else if (errorMessage.includes('upload resume')) {
+        showErrorToast(errorMessage);
+      } else {
+        showErrorToast(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (submitSuccess) {
-    return (
-      <div className="text-center py-20">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
-        >
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
-        </motion.div>
-        <h2 className="text-2xl font-bold text-darkSerpent mb-2">Application Submitted!</h2>
-        <p className="text-darkSerpent/60">Thank you for applying. We'll review your application and get back to you soon.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -377,10 +354,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
               exit={{ opacity: 0, x: -10 }}
               className="space-y-6"
             >
-              <div>
-                <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">Personal Profile</h2>
-                <p className="text-darkSerpent/40 text-sm italic">Tell us a bit about yourself.</p>
-              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <InputField 
@@ -458,11 +431,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
                 exit={{ opacity: 0, x: -10 }}
                 className="space-y-6"
             >
-                <div>
-                  <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">Contact & Location</h2>
-                  <p className="text-darkSerpent/40 text-sm italic">How can we reach you?</p>
-                </div>
-                
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <InputField 
@@ -578,11 +546,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
               exit={{ opacity: 0, x: -10 }}
               className="space-y-6"
             >
-              <div>
-                <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">Application Details</h2>
-                <p className="text-darkSerpent/40 text-sm italic">Select roles and upload your CV.</p>
-              </div>
-              
               <div className="space-y-2 relative">
                 <label className="text-[10px] font-black uppercase tracking-widest text-darkSerpent/40 ml-2">
                   Applied Position(s) <span className="text-red-500">*</span>
@@ -633,7 +596,6 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
                         />
                       </div>
                       <div className="max-h-60 overflow-y-auto p-2 bg-white">
-                        {/* Select All Option */}
                         {positions.length > 0 && (
                           <div 
                             onClick={selectAllPositions}
@@ -711,31 +673,21 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
        
         </AnimatePresence>
 
-        {/* NAVIGATION BUTTONS */}
-        <div className="flex gap-4 pt-4">
+        {/* BUTTONS - Added directly here */}
+        <div className="flex gap-4 pt-8 mt-4 border-t border-darkSerpent/10">
           {currentStep > 1 && (
             <Button type="button" onClick={prevStep} variant="outline" className="flex-1 py-4 rounded-2xl text-sm" disabled={isSubmitting}>
               <ArrowLeft className="w-4 h-4" /> Back
             </Button>
           )}
           {currentStep < 3 ? (
-            <Button 
-              type="button" 
-              onClick={nextStep} 
-              className="flex-2 py-4 rounded-2xl text-sm" 
-              disabled={isSubmitting}
-            >
+            <Button type="button" onClick={nextStep} className="flex-1 py-4 rounded-2xl text-sm" disabled={isSubmitting}>
               Next Step <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
-           <Button 
-            type="button"
-            onClick={handleSubmitButton}
-            className="flex-2 py-4 rounded-2xl text-sm shadow-xl" 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Application'}
-          </Button>
+            <Button type="button" onClick={handleSubmitButton} className="flex-1 py-4 rounded-2xl text-sm shadow-xl" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+            </Button>
           )}
         </div>
       </form>

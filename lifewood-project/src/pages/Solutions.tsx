@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
-import {  Volume2, VolumeX, ArrowRight, Database, Globe, Filter,  Brain, CheckCircle, Search, Cpu, Car, MessageSquare,  Languages, Eye, Users } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Database, Globe, Filter, Brain, CheckCircle, Search, Cpu, Car, MessageSquare, Languages, Eye, Users } from 'lucide-react';
 import aiService1 from "../assets/ai services/ai_service_1.jpeg";
 import aiService2 from "../assets/ai services/ai_service_2.jpeg";
 import aiService3 from "../assets/ai services/ai_service_3.jpeg";
@@ -15,6 +15,7 @@ import machineLearning from "../assets/ai projects/machine_learning.mp4";
 import nlp from "../assets/ai projects/nlp.mp4";
 import Animate from '../components/Animate.tsx';
 import { DocumentStack, AudioNode, VisionGrid, VideoLens } from '../components/AIServices.tsx';
+import VideoPlayer from '../components/VideoPlayer.tsx';
 
 
 // 1. UPDATED NAV ITEMS
@@ -48,20 +49,6 @@ const SERVICES = [
   { title: "Computer Vision", desc: "Visual structuring & audit.", capabilities: ["Image Collection", "Object Detection", "Classification", "Audit"], visual: <VisionGrid />, color: "hover:border-saffaron/40 hover:border-[2px]" },
   { title: "Video Intelligence", desc: "Context-aware stream analysis.", capabilities: ["Video Labelling", "Live Audit", "Subtitle Gen", "Collection"], visual: <VideoLens />, color: "hover:border-castletonGreen/40 hover:border-[2px]" }
 ];
-
-function VideoPlayer() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const toggleMute = () => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } };
-  return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-video bg-darkSerpent/20">
-      <video ref={videoRef} autoPlay muted loop playsInline className="w-full h-full object-cover" src="/src/assets/Lifewood Services.mp4" />
-      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all">
-        {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
-      </button>
-    </div>
-  );
-}
 
 export default function Solutions() {
   const [active, setActive] = useState(0);
@@ -120,7 +107,7 @@ export default function Solutions() {
                 Empowering global enterprises with high-fidelity data engineering.
               </p>
             </Animate>
-            <Animate delay={150}><VideoPlayer /></Animate>
+            <Animate delay={150}><VideoPlayer src="/src/assets/Lifewood Services.mp4" /></Animate>
           </div>
         </div>
       </section>
@@ -227,10 +214,12 @@ export default function Solutions() {
           <div className="mt-12 flex justify-center w-full">
             <div className="flex gap-3 items-center">
               {SOLUTIONS_DATA.map((item, i) => (
-                <button key={i} onClick={() => paginate(i)} className={`relative h-12 w-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-none ${active === i ? "border-saffaron scale-110 shadow-lg z-10 opacity-100" : "border-white/5 opacity-30 grayscale hover:grayscale-0 hover:opacity-100"}`}>
+                <Animate key={i} delay={i * 80}>
+                <button onClick={() => paginate(i)} className={`relative h-12 w-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer ${active === i ? "border-saffaron scale-110 shadow-lg z-10 opacity-100" : "border-white/5 opacity-30 grayscale hover:grayscale-0 hover:opacity-100"}`}>
                   <img src={item.image} className="w-full h-full object-cover" />
                   {active === i && <motion.div layoutId="active-nav-glow" className="absolute inset-0 bg-saffaron/10" />}
                 </button>
+                </Animate>
               ))}
             </div>
           </div>
@@ -266,7 +255,8 @@ export default function Solutions() {
               const isLight = i >= 4;
 
               return (
-                <div key={i} className={`group relative w-full ${bgColor} transition-all duration-500`}>
+                <Animate key={i} delay={i * 80}>
+                <div className={`group relative w-full ${bgColor} transition-all duration-500`}>
                   <div className="px-[15%] md:px-[12%]">
                     <div className="py-5 md:py-6 flex items-center justify-between cursor-pointer">
                       <div className="flex items-center gap-6">
@@ -298,6 +288,7 @@ export default function Solutions() {
                     </div>
                   </div>
                 </div>
+                </Animate>
               );
             })}
           </div>

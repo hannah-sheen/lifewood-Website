@@ -3,9 +3,8 @@ import { Loader2, Clock, FileText, User, Mail, Phone, Calendar, MapPin } from 'l
 import Button from '../../components/Button';
 import { getApplicationDetails } from './applicationServices';
 import type { ApplicationDetails } from '../types';
-import { formatDateTime } from '../../helpers/datetime';
-// import ConfirmationModal from '../../components/ConfirmationModal';
-
+import { formatDateTime, formatDate } from '../../helpers/datetime';
+import InputField from '../../components/InputField';
 
 export default function ApplicationChecker() {
   const [appId, setAppId] = useState('');
@@ -62,26 +61,17 @@ export default function ApplicationChecker() {
 
   return (
     <div className="w-full space-y-2">
-      {/* FORM TITLE */}
-      <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">
-          Application Status
-        </h2>
-        <p className="text-darkSerpent/40 text-sm italic">
-          Track Your Application
-        </p>
-      </div>
-
       {/* Input Section */}
       <div className="flex gap-3">
-        <input
-          type="text"
-          placeholder="Enter Application ID (e.g., APP020526-001)"
-          value={appId}
-          onChange={(e) => setAppId(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="flex-1 px-4 text-sm rounded-xl bg-seaSalt border border-darkSerpent/10 focus:border-saffaron outline-none transition-all"
-        />
+        <div className="flex-1">
+          <InputField
+            type="text"
+            placeholder="Enter Application ID (e.g., APP020526-001)"
+            value={appId}
+            onChange={(e) => setAppId((e.target as HTMLInputElement).value)}
+            onKeyPress={handleKeyPress}
+          />
+        </div>
         <Button onClick={handleCheck} disabled={loading || !appId} className="text-sm rounded-xl">
           {loading ? <Loader2 className="animate-spin w-4 h-4" /> : 'Search'}
         </Button>
@@ -170,7 +160,7 @@ export default function ApplicationChecker() {
                             <Calendar className="w-3 h-3" /> Date of Birth
                         </p>
                         <p className="text-sm font-medium text-darkSerpent">
-                            {new Date(data.applicant.dob).toLocaleDateString()}
+                            {formatDate(data.applicant.dob)}
                         </p>
                         </div>
                         <div>
@@ -216,15 +206,6 @@ export default function ApplicationChecker() {
                 </div>
                 )}
                 </div>
-
-            {/* Footer Action - Withdraw button if pending */}
-            {/* {data.status === 'Pending' && ( */}
-              {/* <div className="pt-4 border-t border-darkSerpent/5">
-                <button className="text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-widest transition-colors">
-                  Withdraw Application
-                </button>
-              </div> */}
-            {/* )} */}
           </div>
         )}
       </div>

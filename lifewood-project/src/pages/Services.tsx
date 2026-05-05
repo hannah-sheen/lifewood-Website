@@ -1,11 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, Globe, Truck, Video, ChevronDown, ChevronUp, VolumeX, Volume2 } from 'lucide-react';
+import { Database, Globe, Truck, Video, ChevronDown, ChevronUp } from 'lucide-react';
 import Animate from '../components/Animate';
 import svcData from '../assets/services/data_servicing.mp4';
 import svcHorizontal from '../assets/services/horizontal_LLM.mp4';
 import svcVertical from '../assets/services/vertical_LLM.mp4';
 import svcAigc from '../assets/services/aigc.mp4';
+import VideoPlayer from '../components/VideoPlayer';
+import { useRef } from 'react';
 
 const SERVICES = [
   {
@@ -61,22 +63,9 @@ const SERVICES = [
   }
 ];
 
-function VideoPlayer() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const toggleMute = () => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } };
-  return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-video bg-darkSerpent/20">
-      <video ref={videoRef} autoPlay muted loop playsInline className="w-full h-full object-cover" src="/src/assets/Lifewood Philippines AIGC Revolution Empowering Innovation.mp4" />
-      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all cursor-pointer">
-        {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
-      </button>
-    </div>
-  );
-}
-
 export default function Services() {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [mobileOpenIdx, setMobileOpenIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,7 +95,7 @@ export default function Services() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <Animate>
-              <VideoPlayer />
+              <VideoPlayer src="/src/assets/Lifewood Philippines AIGC Revolution Empowering Innovation.mp4" />
             </Animate>
             <Animate delay={150}>
               <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Our Services</span>
@@ -121,7 +110,57 @@ export default function Services() {
         </div>
       </section>
 
-      <div className="h-screen relative overflow-hidden">
+      {/* MOBILE: Accordion */}
+      <div className="block lg:hidden py-12 px-6 space-y-4 max-w-2xl mx-auto">
+        <span className="text-saffaron font-black text-xs uppercase tracking-[0.2em] mb-6 block">Workflow Implementation</span>
+        {SERVICES.map((service, i) => (
+          <div key={service.id} className="rounded-2xl overflow-hidden border border-darkSerpent/10 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setMobileOpenIdx(mobileOpenIdx === i ? null : i)}
+              className="w-full flex items-center justify-between p-5 bg-white cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-saffaron/10">
+                  <service.icon className="w-5 h-5 text-saffaron" />
+                </div>
+                <span className="font-bold text-darkSerpent">{service.title}</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-darkSerpent/40 transition-transform duration-300 ${mobileOpenIdx === i ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {mobileOpenIdx === i && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="relative h-48">
+                    <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src={service.video} />
+                    <div className="absolute inset-0 bg-darkSerpent/50" />
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                      <p className="text-sm opacity-80 leading-relaxed line-clamp-3">{service.desc}</p>
+                    </div>
+                  </div>
+                  <div className="bg-seaSalt p-5 space-y-4">
+                    {service.details.map((item, j) => (
+                      <div key={j} className="pb-4 border-b border-darkSerpent/10 last:border-0">
+                        <h4 className="text-sm font-bold text-darkSerpent mb-1">{item.title}</h4>
+                        <p className="text-xs text-darkSerpent/70 leading-relaxed">{item.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+      </div>
+
+      {/* DESKTOP: Side-by-side scroll */}
+      <div className="hidden lg:block h-screen relative overflow-hidden">
         <section className="h-screen flex items-center max-w-7xl mx-auto px-6">
           <div className="relative w-1/2 h-screen">
             {activeIdx > 0 && (
@@ -129,11 +168,10 @@ export default function Services() {
                 <ChevronUp className="w-5 h-5 text-darkSerpent" />
               </button>
             )}
-
             <div ref={scrollRef} id="service-scroll-container" onScroll={handleScroll} className="h-full overflow-y-scroll snap-y snap-mandatory flex flex-col items-center">
               {SERVICES.map((service) => (
                 <div key={service.id} className="min-h-screen w-full snap-start flex items-center justify-center p-12">
-                  <div className={`h-[500px] w-full rounded-[2rem] shadow-2xl flex flex-col justify-end p-10 text-white relative overflow-hidden group`}>
+                  <div className="h-[500px] w-full rounded-[2rem] shadow-2xl flex flex-col justify-end p-10 text-white relative overflow-hidden group">
                     <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src={service.video} />
                     <div className="absolute inset-0 bg-darkSerpent/55" />
                     <div className="absolute top-6 right-6 opacity-10 group-hover:opacity-20 transition-opacity z-10">
@@ -141,26 +179,24 @@ export default function Services() {
                     </div>
                     <div className="relative z-10">
                       <h2 className="text-4xl font-bold tracking-tighter mb-3">{service.title}</h2>
-                      <p className="opacity-80 text-base leading-relaxed whitespace-pre-line">{service.desc}</p>
+                      <p className="opacity-80 text-base leading-relaxed">{service.desc}</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
             {activeIdx < SERVICES.length - 1 && (
               <button onClick={scrollDown} className="absolute bottom-[calc(50%-270px)] left-1/2 -translate-x-1/2 z-20 bg-white p-2 rounded-full shadow-lg hover:bg-saffaron transition-all cursor-pointer">
                 <ChevronDown className="w-5 h-5 text-darkSerpent" />
               </button>
             )}
           </div>
-
           <div className="w-1/2 p-12">
             <div className="sticky top-32">
               <span className="text-saffaron font-black text-xs uppercase tracking-[0.2em] mb-4 block">Workflow Implementation</span>
               <AnimatePresence mode="wait">
-                <motion.div 
-                  key={SERVICES[activeIdx].id}
+                <motion.div
+                  key={SERVICES[activeIdx]?.id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -171,10 +207,9 @@ export default function Services() {
                     <div className="p-3 rounded-xl bg-saffaron/10">
                       <ActiveIcon className="w-8 h-8 text-saffaron" />
                     </div>
-                    <h3 className="text-2xl font-bold text-darkSerpent">{SERVICES[activeIdx].title}</h3>
+                    <h3 className="text-2xl font-bold text-darkSerpent">{SERVICES[activeIdx]?.title}</h3>
                   </div>
-
-                  {SERVICES[activeIdx].details.map((item, i) => (
+                  {SERVICES[activeIdx]?.details.map((item, i) => (
                     <div key={i} className="pb-4 border-b border-darkSerpent/10 last:border-0">
                       <h4 className="text-lg font-bold text-darkSerpent mb-1">{item.title}</h4>
                       <p className="text-sm text-darkSerpent/70 leading-relaxed">{item.text}</p>

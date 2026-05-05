@@ -27,440 +27,236 @@ const OFFICE_LOCATIONS = [
 
 const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: { selectedCountry?: string | null }, ref) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [tooltip, setTooltip] = useState<{ name: string; city: string; details: string; x: number; y: number } | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<any>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<any>(null);
-  const svgRefForZoom = useRef<SVGSVGElement | null>(null);
-  const widthRef = useRef<number>(0);
-  const heightRef = useRef<number>(0);
+  const projectionRef = useRef<any>(null);
+  const gRef = useRef<any>(null);
+  const widthRef = useRef(0);
+  const heightRef = useRef(0);
+  const [tooltip, setTooltip] = useState<{ name: string; city: string; details: string; x: number; y: number } | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const selectedCountryRef = useRef<string | null>(null);
 
-  // Expose zoomToCountry method to parent component
+  const zoomToCoords = (lng: number, lat: number, scale = 3) => {
+    if (!svgRef.current || !zoomRef.current || !projectionRef.current) return;
+    const width = widthRef.current;
+    const height = heightRef.current;
+    const coords = projectionRef.current([lng, lat]);
+    if (!coords) return;
+    const svg = d3.select(svgRef.current);
+    svg.transition().duration(750).call(
+      zoomRef.current.transform,
+      d3.zoomIdentity
+        .translate(width / 2 - coords[0] * scale, height / 2 - coords[1] * scale)
+        .scale(scale)
+    );
+  };
+
+  const highlightCountry = (officeName: string | null) => {
+    if (!svgRef.current) return;
+    selectedCountryRef.current = officeName;
+    d3.select(svgRef.current).selectAll<SVGPathElement, any>('path').attr('fill', (d) => {
+      const name = d?.properties?.name || '';
+      const matched = officeName && OFFICE_LOCATIONS.some(o =>
+        o.name === officeName && (
+          name.toLowerCase().includes(o.name.toLowerCase()) ||
+          o.name.toLowerCase().includes(name.toLowerCase())
+        )
+      );
+      return matched ? '#FFB347' : '#046241';
+    });
+  };
+
   useImperativeHandle(ref, () => ({
-    zoomToCountry: (countryName: string, lng: number, lat: number) => {
-      setSelectedCountry(countryName);
-      
-      setTimeout(() => {
-        if (svgRefForZoom.current && zoomRef.current && widthRef.current && heightRef.current) {
-          const width = widthRef.current;
-          const height = heightRef.current;
-          
-          const projection = d3.geoMercator()
-            .scale(width / 4.2)
-            .center([20, 5])
-            .translate([width / 2, height / 2]);
-          
-          const coords = projection([lng, lat]);
-          if (coords) {
-            const svg = d3.select(svgRefForZoom.current);
-            const newTransform = { 
-              x: width / 2 - coords[0], 
-              y: height / 2 - coords[1], 
-              k: 3 
-            };
-            
-            svg.transition().duration(750).call(
-              zoomRef.current.transform as any, 
-              d3.zoomIdentity
-                .translate(newTransform.x, newTransform.y)
-                .scale(newTransform.k)
-            );
-          }
-        }
-      }, 100);
+    zoomToCountry: (_name: string, lng: number, lat: number) => {
+      highlightCountry(_name);
+      zoomToCoords(lng, lat, 3);
     }
   }));
 
-  // Update selected country when external prop changes
+  // Zoom to external selection
   useEffect(() => {
-    if (externalSelectedCountry) {
-      const office = OFFICE_LOCATIONS.find(o => o.name === externalSelectedCountry);
-      if (office && svgRefForZoom.current && zoomRef.current) {
-        setSelectedCountry(externalSelectedCountry);
-        
-        const width = widthRef.current;
-        const height = heightRef.current;
-        
-        const projection = d3.geoMercator()
-          .scale(width / 4.2)
-          .center([20, 5])
-          .translate([width / 2, height / 2]);
-        
-        const coords = projection([office.lng, office.lat]);
-        if (coords) {
-          const svg = d3.select(svgRefForZoom.current);
-          const newTransform = { 
-            x: width / 2 - coords[0], 
-            y: height / 2 - coords[1], 
-            k: 3 
-          };
-          
-          svg.transition().duration(750).call(
-            zoomRef.current.transform as any, 
-            d3.zoomIdentity
-              .translate(newTransform.x, newTransform.y)
-              .scale(newTransform.k)
-          );
-        }
-      }
+    if (!externalSelectedCountry) return;
+    const office = OFFICE_LOCATIONS.find(o => o.name === externalSelectedCountry);
+    if (office) {
+      highlightCountry(externalSelectedCountry);
+      zoomToCoords(office.lng, office.lat, 3);
     }
   }, [externalSelectedCountry]);
 
+  // Observe container size
   useEffect(() => {
     if (!containerRef.current) return;
-    
-    const resizeObserver = new ResizeObserver(entries => {
+    const ro = new ResizeObserver(entries => {
       const { width, height } = entries[0].contentRect;
       setDimensions({ width, height });
     });
-    
-    resizeObserver.observe(containerRef.current);
-    return () => resizeObserver.disconnect();
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
   }, []);
 
+  // Build map once when dimensions are ready
   useEffect(() => {
     if (!svgRef.current || dimensions.width === 0 || dimensions.height === 0) return;
-    
-    const width = dimensions.width;
-    const height = dimensions.height;
-    
-    // Store width and height for external zoom function
+
+    const { width, height } = dimensions;
     widthRef.current = width;
     heightRef.current = height;
-    svgRefForZoom.current = svgRef.current;
-    
-    // Clear previous content
-    d3.select(svgRef.current).selectAll('*').remove();
-    
+
     const svg = d3.select(svgRef.current)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .style('background', '#133020')
       .style('cursor', 'grab');
-    
-    // Create a group for zoom/pan
+
+    svg.selectAll('*').remove();
+
     const g = svg.append('g');
-    
-    // Create projection with current zoom
+    gRef.current = g;
+
     const projection = d3.geoMercator()
       .scale(width / 4.2)
       .center([20, 5])
       .translate([width / 2, height / 2]);
-    
-    // Create path generator
+    projectionRef.current = projection;
+
     const geoPath = d3.geoPath().projection(projection);
-    
-    // Add zoom behavior
+
+    // Zoom — just transform the group, no path recalculation
     const zoom = d3.zoom()
       .scaleExtent([1, 8])
       .on('zoom', (event) => {
-        const newTransform = event.transform;
-        
-        // Update projection and redraw
-        const newProjection = d3.geoMercator()
-          .scale(width / 4.2 * newTransform.k)
-          .center([20, 5])
-          .translate([width / 2 + newTransform.x, height / 2 + newTransform.y]);
-        
-        const newPath = d3.geoPath().projection(newProjection);
-        
-        // Update countries
-        svg.selectAll('path').attr('d', (d: any) => newPath(d));
-        
-        // Update markers
-        svg.selectAll('.marker').attr('cx', (d: any) => {
-          const coords = newProjection([d.lng, d.lat]);
-          return coords ? coords[0] : 0;
-        }).attr('cy', (d: any) => {
-          const coords = newProjection([d.lng, d.lat]);
-          return coords ? coords[1] : 0;
-        });
-        
-        svg.selectAll('.pulse').attr('cx', (d: any) => {
-          const coords = newProjection([d.lng, d.lat]);
-          return coords ? coords[0] : 0;
-        }).attr('cy', (d: any) => {
-          const coords = newProjection([d.lng, d.lat]);
-          return coords ? coords[1] : 0;
-        });
+        g.attr('transform', event.transform);
       });
-    
+
     svg.call(zoom as any);
     zoomRef.current = zoom;
-    
-    // Load and draw world map
+
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json')
-      .then(response => response.json())
+      .then(r => r.json())
       .then(world => {
         const countries = topojson.feature(world, world.objects.countries) as any;
-        
-        // Draw countries with interactive features
+
         g.selectAll('path')
           .data(countries.features)
           .enter()
           .append('path')
-          .attr('d', (feature: any) => geoPath(feature))
-          .attr('fill', (d: any) => {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const hasOffice = OFFICE_LOCATIONS.some(office => 
-              countryName.toLowerCase().includes(office.name.toLowerCase()) ||
-              office.name.toLowerCase().includes(countryName.toLowerCase())
-            );
-            return selectedCountry === countryName ? '#FFB347' : '#046241';
-          })
+          .attr('d', (d: any) => geoPath(d))
+          .attr('fill', '#046241')
           .attr('stroke', (d: any) => {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const hasOffice = OFFICE_LOCATIONS.some(office => 
-              countryName.toLowerCase().includes(office.name.toLowerCase()) ||
-              office.name.toLowerCase().includes(countryName.toLowerCase())
+            const name = d.properties?.name || '';
+            const hasOffice = OFFICE_LOCATIONS.some(o =>
+              name.toLowerCase().includes(o.name.toLowerCase()) ||
+              o.name.toLowerCase().includes(name.toLowerCase())
             );
             return hasOffice ? '#FFC370' : '#FFB347';
           })
           .attr('stroke-width', (d: any) => {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const hasOffice = OFFICE_LOCATIONS.some(office => 
-              countryName.toLowerCase().includes(office.name.toLowerCase()) ||
-              office.name.toLowerCase().includes(countryName.toLowerCase())
-            );
-            return hasOffice ? 1.5 : 0.5;
+            const name = d.properties?.name || '';
+            return OFFICE_LOCATIONS.some(o =>
+              name.toLowerCase().includes(o.name.toLowerCase()) ||
+              o.name.toLowerCase().includes(name.toLowerCase())
+            ) ? 1.5 : 0.5;
           })
           .attr('stroke-opacity', 0.7)
           .attr('cursor', 'pointer')
-          .on('mouseenter', function(this: any, event: any, d: any) {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const hasOffice = OFFICE_LOCATIONS.some(office => 
-              countryName.toLowerCase().includes(office.name.toLowerCase()) ||
-              office.name.toLowerCase().includes(countryName.toLowerCase())
+          .on('mouseenter', function(this: any, _e: any, d: any) {
+            const name = d.properties?.name || '';
+            const hasOffice = OFFICE_LOCATIONS.some(o =>
+              name.toLowerCase().includes(o.name.toLowerCase()) ||
+              o.name.toLowerCase().includes(name.toLowerCase())
             );
-            
-            if (hasOffice) {
-              d3.select(this)
-                .attr('fill', '#FFC370')
-                .attr('stroke', '#F9F7F7')
-                .attr('stroke-width', 2);
-            } else {
-              d3.select(this)
-                .attr('fill', '#0a5a3a')
-                .attr('stroke', '#FFB347')
-                .attr('stroke-width', 1);
-            }
+            d3.select(this).attr('fill', hasOffice ? '#FFC370' : '#0a5a3a');
           })
-          .on('mouseleave', function(this: any, event: any, d: any) {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const isSelected = selectedCountry === countryName;
-            d3.select(this)
-              .attr('fill', isSelected ? '#FFB347' : '#046241')
-              .attr('stroke', '#FFB347')
-              .attr('stroke-width', 0.5);
+          .on('mouseleave', function(this: any) {
+            d3.select(this).attr('fill', '#046241');
           })
-          .on('click', function(this: any, event: any, d: any) {
-            const countryName = d.properties?.name || d.properties?.admin || '';
-            const office = OFFICE_LOCATIONS.find(office => 
-              countryName.toLowerCase().includes(office.name.toLowerCase()) ||
-              office.name.toLowerCase().includes(countryName.toLowerCase())
+          .on('click', (_e: any, d: any) => {
+            const name = d.properties?.name || '';
+            const office = OFFICE_LOCATIONS.find(o =>
+              name.toLowerCase().includes(o.name.toLowerCase()) ||
+              o.name.toLowerCase().includes(name.toLowerCase())
             );
-            
             if (office) {
-              setSelectedCountry(countryName);
-              // Center map on clicked country
-              const coords = projection([office.lng, office.lat]);
-              if (coords) {
-                const newTransform = { x: width / 2 - coords[0], y: height / 2 - coords[1], k: 2 };
-                svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity
-                  .translate(newTransform.x, newTransform.y)
-                  .scale(newTransform.k));
-              }
+              highlightCountry(office.name);
+              zoomToCoords(office.lng, office.lat, 2);
             }
           });
-        
-        // Add markers
-        g.selectAll('.marker')
-          .data(OFFICE_LOCATIONS)
-          .enter()
-          .append('circle')
-          .attr('class', 'marker')
-          .attr('cx', d => {
-            const coords = projection([d.lng, d.lat]);
-            return coords ? coords[0] : 0;
-          })
-          .attr('cy', d => {
-            const coords = projection([d.lng, d.lat]);
-            return coords ? coords[1] : 0;
-          })
-          .attr('r', 8)
-          .attr('fill', '#FFB347')
-          .attr('stroke', '#F9F7F7')
-          .attr('stroke-width', 2)
-          .attr('cursor', 'pointer')
-          .on('mouseenter', function(this: any, event: any, d: any) {
-            setTooltip({
-              name: d.name,
-              city: d.city,
-              details: d.details,
-              x: event.clientX,
-              y: event.clientY
-            });
-            d3.select(this)
-              .attr('r', 12)
-              .attr('fill', '#FFC370');
-          })
-          .on('mouseleave', function(this: any, event: any, d: any) {
-            setTooltip(null);
-            d3.select(this)
-              .attr('r', 8)
-              .attr('fill', '#FFB347');
-          })
-          .on('click', function(this: any, event: any, d: any) {
-            setSelectedCountry(d.name);
-            // Center map on clicked marker
-            const coords = projection([d.lng, d.lat]);
-            if (coords) {
-              const newTransform = { x: width / 2 - coords[0], y: height / 2 - coords[1], k: 3 };
-              svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity
-                .translate(newTransform.x, newTransform.y)
-                .scale(newTransform.k));
-            }
-          });
-        
-        // Add pulsing effect circles
+
+        // Pulse rings
         g.selectAll('.pulse')
           .data(OFFICE_LOCATIONS)
           .enter()
           .append('circle')
           .attr('class', 'pulse')
-          .attr('cx', d => {
-            const coords = projection([d.lng, d.lat]);
-            return coords ? coords[0] : 0;
-          })
-          .attr('cy', d => {
-            const coords = projection([d.lng, d.lat]);
-            return coords ? coords[1] : 0;
-          })
+          .attr('cx', d => projection([d.lng, d.lat])![0])
+          .attr('cy', d => projection([d.lng, d.lat])![1])
           .attr('r', 8)
           .attr('fill', '#FFB347')
-          .attr('fill-opacity', 0.4)
-          .style('animation', 'pulse 1.5s ease-out infinite');
-      })
-      .catch(error => {
-        console.error('Error loading map:', error);
+          .attr('fill-opacity', 0.35)
+          .style('animation', 'mapPulse 2s ease-out infinite');
+
+        // Markers
+        g.selectAll('.marker')
+          .data(OFFICE_LOCATIONS)
+          .enter()
+          .append('circle')
+          .attr('class', 'marker')
+          .attr('cx', d => projection([d.lng, d.lat])![0])
+          .attr('cy', d => projection([d.lng, d.lat])![1])
+          .attr('r', 6)
+          .attr('fill', '#FFB347')
+          .attr('stroke', '#F9F7F7')
+          .attr('stroke-width', 1.5)
+          .attr('cursor', 'pointer')
+          .on('mouseenter', function(this: any, event: any, d: any) {
+            setTooltip({ name: d.name, city: d.city, details: d.details, x: event.clientX, y: event.clientY });
+            d3.select(this).attr('r', 9).attr('fill', '#FFC370');
+          })
+          .on('mouseleave', function(this: any) {
+            setTooltip(null);
+            d3.select(this).attr('r', 6).attr('fill', '#FFB347');
+          })
+          .on('click', (_e: any, d: any) => {
+            highlightCountry(d.name);
+            zoomToCoords(d.lng, d.lat, 3);
+          });
       });
-  }, [dimensions, selectedCountry]);
+  }, [dimensions]);
 
   return (
     <>
       <style>{`
-        @keyframes pulse {
-          0% {
-            r: 8;
-            opacity: 0.6;
-          }
-          100% {
-            r: 25;
-            opacity: 0;
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes mapPulse {
+          0% { r: 6; opacity: 0.5; }
+          100% { r: 22; opacity: 0; }
         }
       `}</style>
-      
-      <div 
-        ref={containerRef} 
-        className="relative w-full bg-darkSerpent rounded-2xl overflow-hidden"
-        style={{ height: '100%', minHeight: '550px' }}
-      >
-        {/* Zoom Controls */}
+      <div ref={containerRef} className="relative w-full bg-darkSerpent rounded-2xl overflow-hidden" style={{ height: '100%', minHeight: '550px' }}>
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-          <button
-            onClick={() => {
-              const svg = d3.select(svgRef.current);
-              svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 1.2);
-            }}
-            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
-          >
-            +
-          </button>
-          <button
-            onClick={() => {
-              const svg = d3.select(svgRef.current);
-              svg.transition().duration(300).call(zoomRef.current.scaleBy as any, 0.8);
-            }}
-            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-xl font-bold z-30 border-white border-2"
-          >
-            -
-          </button>
-          <button
-            onClick={() => {
-              const svg = d3.select(svgRef.current);
-              svg.transition().duration(500).call(zoomRef.current.transform as any, d3.zoomIdentity);
-              setSelectedCountry(null);
-            }}
-            className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all duration-200 shadow-lg flex items-center justify-center text-sm font-semibold z-30 border-white border-2"
-          >
-            ↺
-          </button>
+          <button onClick={() => d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 1.3)} className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all shadow-lg flex items-center justify-center text-xl font-bold border-white border-2 cursor-pointer">+</button>
+          <button onClick={() => d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 0.77)} className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all shadow-lg flex items-center justify-center text-xl font-bold border-white border-2 cursor-pointer">-</button>
+          <button onClick={() => d3.select(svgRef.current).transition().duration(500).call(zoomRef.current.transform, d3.zoomIdentity)} className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all shadow-lg flex items-center justify-center text-sm font-semibold border-white border-2 cursor-pointer">↺</button>
         </div>
-        
+
         <svg ref={svgRef} className="w-full h-full" />
-        
-        {/* Interactive Tooltip */}
+
         {tooltip && (
-          <div 
-            className="fixed bg-castletonGreen text-seaSalt rounded-lg shadow-xl z-50"
-            style={{
-              left: tooltip.x + 15,
-              top: tooltip.y - 60,
-              minWidth: '200px',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
-          >
+          <div className="fixed bg-castletonGreen text-seaSalt rounded-lg shadow-xl z-50 pointer-events-none" style={{ left: tooltip.x + 15, top: tooltip.y - 60, minWidth: '200px' }}>
             <div className="p-3 border-b border-saffaron/30">
-              <div className="font-semibold text-sm flex items-center gap-2">
-                <span>📍</span>
-                <span>{tooltip.name}</span>
-              </div>
+              <div className="font-semibold text-sm flex items-center gap-2"><span>📍</span><span>{tooltip.name}</span></div>
               <div className="text-xs text-saffaron mt-1">{tooltip.city}</div>
             </div>
-            <div className="p-3 text-xs">
-              {tooltip.details}
-            </div>
+            <div className="p-3 text-xs">{tooltip.details}</div>
           </div>
         )}
-        
-        {/* Interactive Legend */}
+
         <div className="absolute bottom-4 right-4 bg-darkSerpent/95 backdrop-blur-sm rounded-lg p-3 text-xs z-20 border border-saffaron/30 shadow-lg">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-3 h-3 rounded-full bg-saffaron animate-pulse"></div>
-            <span className="text-seaSalt">Active Offices (20)</span>
-          </div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-3 h-3 rounded-full bg-white border-2 border-saffaron"></div>
-            <span className="text-seaSalt">Office Locations</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-earthYellow"></div>
-            <span className="text-seaSalt">Hover/Selected</span>
-          </div>
-          <div className="mt-2 pt-2 border-t border-saffaron/30">
-            <div className="text-seaSalt/60 text-xs flex items-center gap-2">
-              <span>🖱️</span> Click to zoom
-              <span>🔍</span> Scroll to zoom
-              <span>✋</span> Drag to pan
-            </div>
-          </div>
+          <div className="flex items-center gap-3 mb-2"><div className="w-3 h-3 rounded-full bg-saffaron animate-pulse" /><span className="text-seaSalt">Active Offices (20)</span></div>
+          <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-white border-2 border-saffaron" /><span className="text-seaSalt">Office Locations</span></div>
         </div>
-        
-        {/* Instructions */}
+
         <div className="absolute bottom-4 left-4 bg-darkSerpent/80 backdrop-blur-sm rounded-lg px-3 py-2 text-xs z-20 border border-saffaron/30">
-          <span className="text-seaSalt">💡 Tip: Click on any country or marker to zoom in</span>
+          <span className="text-seaSalt">💡 Click a marker to zoom in</span>
         </div>
       </div>
     </>
@@ -468,5 +264,4 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
 });
 
 OperationsMap.displayName = 'OperationsMap';
-
 export default OperationsMap;

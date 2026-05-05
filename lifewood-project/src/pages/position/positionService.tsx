@@ -103,3 +103,15 @@ export async function restorePosition(id: number) {
   if (error) throw new Error(error.message);
   return data[0];
 }
+
+export async function fetchAvailablePositions() {
+  const { data, error } = await supabase
+    .from('position')
+    .select('*')
+    .eq('is_archive', false)
+    .neq('status', 'Full')  // status is not 'Full'
+    .order('id', { ascending: true });
+  
+  if (error) throw new Error(error.message);
+  return data;
+}

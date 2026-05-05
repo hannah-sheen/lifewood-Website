@@ -92,7 +92,7 @@ export default function Navbar() {
         {NAV_ITEMS.map(({ label, path }) => (
           <div
             key={path}
-            onClick={() => navigate(path)}
+            onClick={() => { navigate(path); setMenuOpen(false); }}
             className={`py-3 text-sm font-medium cursor-pointer border-b border-gray-100 last:border-0 ${
               isActive(path) ? 'text-darkSerpent' : 'text-darkSerpent/60'
             }`}
@@ -101,7 +101,7 @@ export default function Navbar() {
           </div>
         ))}
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => { navigate('/login'); setMenuOpen(false); }}
           className="mt-4 w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-darkSerpent/20 text-darkSerpent text-sm font-semibold hover:bg-darkSerpent hover:text-white transition-all duration-200"
         >
           Get Started

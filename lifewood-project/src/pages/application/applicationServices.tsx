@@ -1,6 +1,9 @@
 import { supabase } from '../../lib/supabase';
-import type { ApplicationFormData, ApplicationDetails } from '../types';
+import type { ApplicationFormData, ApplicationDetails, Position } from '../types';
 
+//======================================================================
+//                RESUME BUCKET UPLOAD
+//======================================================================
 export async function uploadResume(file: File): Promise<string> {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(7);
@@ -26,41 +29,188 @@ export async function uploadResume(file: File): Promise<string> {
   return publicUrl;
 }
 
+
+//======================================================================
+//                APPLICATION SERVICES
+//======================================================================
+// Helper function to check if application is still active based on latest log
+function isApplicationActive(status: string): boolean {
+  const activeStatuses = ['pending', 'shortlisted', 'hired'];
+  return activeStatuses.includes(status.toLowerCase());
+}
+
+// Get the current status of an application from its logs
+async function getCurrentApplicationStatus(applicationId: string): Promise<string | null> {
+  const { data: logs, error } = await supabase
+    .from('application_log')
+    .select('status')
+    .eq('app_id', applicationId)
+    .order('datetime', { ascending: false })
+    .limit(1);
+
+  if (error || !logs || logs.length === 0) {
+    return null;
+  }
+
+  return logs[0].status;
+}
+
 export async function submitApplication(formData: ApplicationFormData) {
-  // STEP 1: Upload resume to bucket FIRST
+  // STEP 1: Validate required fields
   if (!formData.resumeFile) {
     throw new Error('Resume is required');
   }
-  
-  let resumeUrl: string;
-  try {
-    resumeUrl = await uploadResume(formData.resumeFile);
-  } catch (error) {
-    throw new Error('Failed to upload resume. Please try again.');
-  }
-  
-  // STEP 2: Insert applicant with the resume URL
-  const { data: applicantData, error: applicantError } = await supabase
-    .from('applicant')
-    .insert({
-      fname: formData.fname,
-      lname: formData.lname,
-      gender: formData.gender,
-      dob: formData.dob,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      country: formData.country,
-      resume: resumeUrl
-    })
-    .select()
-    .single();
 
-  if (applicantError) {
-    throw new Error('Failed to save applicant data');
+  // STEP 2: Check if email already exists
+  const { data: existingApplicant, error: existingError } = await supabase
+    .from('applicant')
+    .select('id, fname, lname, dob, email')
+    .eq('email', formData.email)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error('Error checking existing applicant');
   }
-  
-  // STEP 3: Check database once to get the next counter
+
+  let applicantId: number;
+  let isNewApplicant = false;
+  let applicantNameMatch = true;
+  let applicantDobMatch = true;
+
+  if (existingApplicant) {
+    // Email exists - verify name and DOB match
+    const nameMatches = existingApplicant.fname.toLowerCase() === formData.fname.toLowerCase() &&
+                       existingApplicant.lname.toLowerCase() === formData.lname.toLowerCase();
+    const dobMatches = existingApplicant.dob === formData.dob;
+
+    applicantNameMatch = nameMatches;
+    applicantDobMatch = dobMatches;
+
+    if (!nameMatches && !dobMatches) {
+      throw new Error('This email is already used.');
+    }
+    applicantId = existingApplicant.id;
+  } else {
+    // New applicant - upload resume and create record
+    isNewApplicant = true;
+    
+    let resumeUrl: string;
+    try {
+      resumeUrl = await uploadResume(formData.resumeFile);
+    } catch (error) {
+      throw new Error('Failed to upload resume. Please try again.');
+    }
+
+    const { data: newApplicant, error: applicantError } = await supabase
+      .from('applicant')
+      .insert({
+        fname: formData.fname,
+        lname: formData.lname,
+        gender: formData.gender,
+        dob: formData.dob,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        country: formData.country,
+        resume: resumeUrl
+      })
+      .select()
+      .single();
+
+    if (applicantError) {
+      throw new Error('Failed to save applicant data');
+    }
+
+    applicantId = newApplicant.id;
+  }
+
+  // STEP 3: Get existing applications for this applicant
+  const { data: existingApplications, error: existingAppsError } = await supabase
+    .from('application')
+    .select(`
+      id,
+      pos_id,
+      position:pos_id (
+        id,
+        title
+      )
+    `)
+    .eq('apl_id', applicantId);
+
+  if (existingAppsError) {
+    throw new Error('Error checking existing applications');
+  }
+
+  // STEP 4: Get current status for each existing application from logs
+  const applicationsWithStatus = await Promise.all(
+    (existingApplications || []).map(async (app) => {
+      const currentStatus = await getCurrentApplicationStatus(app.id);
+      return {
+        ...app,
+        currentStatus: currentStatus?.toLowerCase() || 'pending'
+      };
+    })
+  );
+
+  // STEP 5: Get position IDs for requested positions
+  const positionIdsMap = new Map<string, { id: number; title: string }>();
+  for (const positionTitle of formData.positions) {
+    const { data: positionData, error: positionError } = await supabase
+      .from('position')
+      .select('id, title')
+      .eq('title', positionTitle)
+      .single();
+    
+    if (positionError) {
+      throw new Error(`Position "${positionTitle}" not found`);
+    }
+    positionIdsMap.set(positionTitle, { id: positionData.id, title: positionData.title });
+  }
+
+  // STEP 6: Validate each requested position against existing applications
+  const conflictingPositions: string[] = [];
+  const newApplications = [];
+
+  for (const positionTitle of formData.positions) {
+    const positionInfo = positionIdsMap.get(positionTitle);
+    if (!positionInfo) continue;
+
+    const existingApp = applicationsWithStatus.find(
+      app => app.pos_id === positionInfo.id
+    );
+
+    if (existingApp) {
+      const status = existingApp.currentStatus;
+      if (isApplicationActive(status)) {
+        conflictingPositions.push(`${positionInfo.title}`);
+      } else {
+        // Position exists but application is inactive (declined/not selected/withdrawn)
+        // Allow reapplication
+        newApplications.push({
+          pos_id: positionInfo.id,
+          title: positionInfo.title
+        });
+      }
+    } else {
+      // No existing application for this position
+      newApplications.push({
+        pos_id: positionInfo.id,
+        title: positionInfo.title
+      });
+    }
+  }
+
+  // If there are conflicts, throw error
+  if (conflictingPositions.length > 0) {
+    throw new Error(`You already have active applications for: ${conflictingPositions.join(', ')}.`);
+  }
+
+  // If no new applications to add
+  if (newApplications.length === 0) {
+    throw new Error('All selected positions already have applications. No new applications were added.');
+  }
+
+  // STEP 7: Generate application IDs and insert
   const today = new Date();
   const day = String(today.getDate()).padStart(2, '0');
   const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -82,34 +232,20 @@ export async function submitApplication(formData: ApplicationFormData) {
     startCounter = parseInt(lastId.split('-')[1]) + 1;
   }
   
-  // Generate all application IDs based on number of positions
   const applications = [];
   const applicationLogs = [];
   const currentDateTime = new Date().toISOString();
   
-  for (let i = 0; i < formData.positions.length; i++) {
-    const positionTitle = formData.positions[i];
-    
-    // Get position ID from title
-    const { data: positionData, error: positionError } = await supabase
-      .from('position')
-      .select('id')
-      .eq('title', positionTitle)
-      .single();
-    
-    if (positionError) {
-      continue;
-    }
-    
-    // Generate unique application ID
+  for (let i = 0; i < newApplications.length; i++) {
+    const app = newApplications[i];
     const counter = String(startCounter + i).padStart(3, '0');
     const applicationId = `${baseId}-${counter}`;
     
     applications.push({
       id: applicationId,
       date_submitted: currentDateTime,
-      pos_id: positionData.id,
-      apl_id: applicantData.id
+      pos_id: app.pos_id,
+      apl_id: applicantId
     });
     
     applicationLogs.push({
@@ -119,31 +255,41 @@ export async function submitApplication(formData: ApplicationFormData) {
     });
   }
 
-  if (applications.length === 0) {
-    throw new Error('No valid positions found');
-  }
-
   // Insert all applications
   const { error: applicationError } = await supabase
     .from('application')
     .insert(applications);
 
   if (applicationError) {
+    console.error('Application insert error:', applicationError);
     throw new Error('Failed to save applications');
   }
 
   // Insert all application logs
-  const { error: _logsError } = await supabase
+  const { error: logsError } = await supabase
     .from('application_log')
     .insert(applicationLogs);
 
+  if (logsError) {
+    console.error('Logs insert error:', logsError);
+    // Don't throw here - applications were created successfully
+  }
+
   return { 
     success: true, 
-    applicantId: applicantData.id, 
+    applicantId: applicantId,
+    isExistingApplicant: !isNewApplicant,
     applicationIds: applications.map(app => app.id),
-    resumeUrl 
+    newApplicationsCount: newApplications.length
   };
 }
+
+// Get the current status of an application (most recent log)
+export async function getApplicationCurrentStatus(applicationId: string): Promise<string> {
+  const status = await getCurrentApplicationStatus(applicationId);
+  return status || 'Pending';
+}
+
 
 export async function getApplicationDetails(applicationId: string) {
   // Step 1: Get the application record

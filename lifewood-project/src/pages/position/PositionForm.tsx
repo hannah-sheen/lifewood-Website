@@ -160,6 +160,8 @@
 import { useState } from 'react';
 import Button from '../../components/Button.tsx';
 import { addPosition, updatePosition } from './positionService.tsx';
+import InputField from '../../components/InputField.tsx';
+import { showSuccessToast, showErrorToast } from '../../components/Toast.tsx';
 
 interface PositionFormProps {
   isEditMode: boolean;
@@ -217,8 +219,11 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
       // Success - close form and refresh parent data
       onSuccess();
       onClose();
+      showSuccessToast(isEditMode ? 'Position updated successfully!' : 'Position created successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save position');
+      const msg = err instanceof Error ? err.message : 'Failed to save position';
+      setError(msg);
+      showErrorToast(msg);
     } finally {
       setLoading(false);
     }
@@ -232,37 +237,26 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
         </div>
       )}
 
-      {/* Title Input */}
-      <div>
-        <label className="block text-xs font-bold uppercase text-castletonGreen mb-2 tracking-widest">
-          Position Title <span className="text-red-500">*</span>
-        </label>
-        <input
-          required
-          type="text"
-          className="w-full p-3 text-sm bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          disabled={loading}
-          placeholder="e.g., Senior Software Engineer"
-        />
-      </div>
+      <InputField
+        label="Position Title"
+        required
+        type="text"
+        value={formData.title}
+        onChange={(e) => setFormData({ ...formData, title: (e.target as HTMLInputElement).value })}
+        disabled={loading}
+        placeholder="e.g., Senior Software Engineer"
+      />
 
-      {/* Description Input */}
-      <div>
-        <label className="block text-xs font-bold uppercase text-castletonGreen mb-2 tracking-widest">
-          Description <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          required
-          rows={4}
-          className="w-full p-3 text-sm bg-seaSalt rounded-xl border border-gray-200 focus:ring-2 ring-saffaron/50 outline-none transition-all"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          disabled={loading}
-          placeholder="Describe the role, responsibilities, and requirements..."
-        />
-      </div>
+      <InputField
+        as="textarea"
+        label="Description"
+        required
+        rows={4}
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: (e.target as HTMLTextAreaElement).value })}
+        disabled={loading}
+        placeholder="Describe the role, responsibilities, and requirements..."
+      />
 
       {/* Status Toggle */}
       <div>

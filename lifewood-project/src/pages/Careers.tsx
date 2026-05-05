@@ -1,28 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Users, Heart, Lightbulb, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion'; 
+import { ArrowRight, Users, Heart, Lightbulb, ShieldCheck, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApplicationForm from './application/ApplicationForm.tsx';
 import Animate from '../components/Animate.tsx';
 import ApplicationChecker from './application/ApplicationChecker.tsx';
+import { fetchAvailablePositions } from './position/positionService.tsx';
+import type { Position } from './types';
+import Modal from '../components/Modal.tsx';
+import VideoPlayer from '../components/VideoPlayer.tsx';
 
 const SECTIONS = [
   { id: 'culture', label: 'Culture' },
+  { id: 'positions', label: 'Open Roles' },
   { id: 'join', label: 'Join Us' },
 ];
-
-function VideoPlayer({ src }: { src: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const toggleMute = () => { if (videoRef.current) { videoRef.current.muted = !muted; setMuted(!muted); } };
-  return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-video bg-darkSerpent/20">
-      <video ref={videoRef} autoPlay muted loop playsInline className="w-full h-full object-cover" src={src} />
-      <button onClick={toggleMute} className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all cursor-pointer">
-        {muted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
-      </button>
-    </div>
-  );
-}
 
 const CULTURE_VALUES = [
   { title: "Diversity", icon: <Users className="w-5 h-5" />, desc: "We celebrate unique perspectives that move us forward." },
@@ -34,92 +25,65 @@ const CULTURE_VALUES = [
 export default function Careers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'apply' | 'check'>('apply');
+  const [modalTitle, setModalTitle] = useState('Personal Profile');
+  const [modalSubtitle, setModalSubtitle] = useState('Tell us a bit about yourself.');
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
-  // Helper to open modal with a specific mode
-  const openModal = (mode: 'apply' | 'check') => {
+  const openModal = (mode: 'apply' | 'check') => { 
     setModalMode(mode);
     setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleFormSuccess = () => {
-    // Close modal after successful submission
-    setTimeout(() => {
-      closeModal();
-    }, 2000); // Wait 2 seconds to show success message before closing
-  };
-
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
+    if (mode === 'apply') {
+      setModalTitle('Personal Profile');
+      setModalSubtitle('Tell us a bit about yourself.');
     } else {
-      document.body.style.overflow = 'unset';
-    }
-    // Cleanup on unmount
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [isModalOpen]);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      setModalTitle('Check Your Application');
+      setModalSubtitle('Enter your application ID to check your status.');
     }
   };
+  
+  const closeModal = () => setIsModalOpen(false);
+  const handleFormSuccess = () => { closeModal();};
+  const scrollToSection = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  // Fetch available positions (not Full and not archived)
+  useEffect(() => {
+    const loadPositions = async () => {
+      setLoadingPositions(true);
+      try {
+        const data = await fetchAvailablePositions();
+        setPositions(data || []);
+      } catch (error) {
+        console.error('Error loading positions:', error);
+      } finally {
+        setLoadingPositions(false);
+      }
+    };
+    loadPositions();
+  }, []);
 
   return (
     <div className="bg-seaSalt min-h-screen selection:bg-saffaron/30 relative">
-      
-      {/* --- MODAL OVERLAY --- */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              onClick={closeModal}
-              className="absolute inset-0 bg-darkSerpent/90 backdrop-blur-xl"
-            />
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white rounded-[3.5rem] shadow-2xl no-scrollbar p-10 md:p-20 pb-20"
-            >
-              <button 
-                onClick={closeModal}
-                className="absolute top-8 right-8 z-[310] p-3 rounded-full bg-seaSalt text-darkSerpent hover:bg-saffaron transition-all cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={closeModal}
+        title={modalTitle}
+        subtitle={modalSubtitle}
+        className="max-w-4xl"
+      >
+        {modalMode === 'apply' 
+          ? <ApplicationForm onSuccess={handleFormSuccess} /> 
+          : <ApplicationChecker />}
+      </Modal>
 
-              <div className="max-w-3xl mx-auto">
-                {/* Dynamic Content Switching */}
-                {modalMode === 'apply' ? 
-                  <ApplicationForm onSuccess={handleFormSuccess} /> : 
-                  <ApplicationChecker />
-                }
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* --- SIDE NAVIGATION --- */}
+      {/* SIDE NAVIGATION */}
       <nav className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-[100] hidden lg:flex flex-col gap-8">
         {SECTIONS.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => scrollToSection(s.id)}
-            className="group flex items-center justify-end gap-4 outline-none"
-          >
-            <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md pointer-events-none translate-x-2 group-hover:translate-x-0">
-              {s.label}
-            </span>
+          <button key={s.id} onClick={() => scrollToSection(s.id)} className="group flex items-center justify-end gap-4 outline-none">
+            <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md translate-x-2 group-hover:translate-x-0">{s.label}</span>
             <div className="relative flex items-center justify-center">
               <div className="h-4 w-4 rounded-full border-2 border-saffaron group-hover:border-saffaron transition-all duration-300" />
               <div className="absolute h-1.5 w-1.5 rounded-full bg-earthYellow scale-0 group-hover:scale-100 transition-transform duration-300 shadow-[0_0_8px_rgba(255,179,71,0.8)]" />
@@ -128,28 +92,19 @@ export default function Careers() {
         ))}
       </nav>
 
-      {/* 1. HERO SECTION */}
+      {/* HERO */}
       <section id="hero" className="pt-32 pb-20 bg-darkSerpent text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-castletonGreen/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center">
             <Animate>
               <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Work With Us</span>
-              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8">
-                Empower Your <br/> <span className="text-white/20 italic">Global Career.</span>
-              </h1>
-              <p className="text-white/60 text-xl leading-relaxed">
-                Lifewood is more than a tech provider—we are a social enterprise. Join a team where high-performance AI data engineering meets real-world social impact.
-              </p>
+              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8">Empower Your <br/> <span className="text-white/20 italic">Global Career.</span></h1>
+              <p className="text-white/60 text-xl leading-relaxed">Lifewood is more than a tech provider—we are a social enterprise. Join a team where high-performance AI data engineering meets real-world social impact.</p>
             </Animate>
-            <Animate delay={150}>
-              <VideoPlayer src="/src/assets/careers/Lifewood Empowering the Future Through AI 2025.mp4" />
-            </Animate>
-          </div>
+            <Animate delay={150}><VideoPlayer src="/src/assets/careers/Lifewood Empowering the Future Through AI 2025.mp4" /></Animate>
         </div>
       </section>
 
-      {/* 2. CULTURE & VALUES */}
+      {/* CULTURE */}
       <section id="culture" className="pt-20 pb-10 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-10">
@@ -178,44 +133,157 @@ export default function Careers() {
         </div>
       </section>
 
-      {/* 3. JOIN US CTA SECTION */}
-      <section id="join" className="py-32 bg-white relative">
+      {/* POSITIONS SECTION */}
+      <section id="positions" className="py-24 bg-darkSerpent text-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-10">
+            <Animate>
+              <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+                <div className="md:w-1/2 text-left">
+                  <p className="text-white/60 text-lg leading-relaxed max-w-md">
+                    Be part of a purpose-driven organization. Explore roles that challenge you, empower communities, and drive AI innovation forward.
+                  </p>
+                </div>
+                <div className="md:w-1/2 text-right">
+                  <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-3 block">Open Roles</span>
+                  <h2 className="text-6xl md:text-6xl font-bold tracking-tighter text-white">
+                    Current Opportunities
+                  </h2>
+                </div>
+              </div>
+            </Animate>
+          </div>
+
+          {loadingPositions ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 text-saffaron animate-spin" />
+            </div>
+          ) : positions.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-white/50 text-lg">No open positions at the moment. Please check back later!</p>
+            </div>
+          ) : (
+            <>
+            <motion.div 
+              layoutRoot
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {positions
+                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                .map((pos, index) => {
+                  const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
+                  return (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 32 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ layout: { type: 'spring', stiffness: 400, damping: 35 }, opacity: { duration: 0.5, delay: index * 0.08 }, y: { duration: 0.5, delay: index * 0.08 } }}
+                  key={pos.id}
+                  onClick={() => setSelectedId(pos.id === selectedId ? null : pos.id)}
+                  className={`cursor-pointer rounded-[2rem] p-8 border backdrop-blur-md overflow-hidden flex flex-col justify-between ${
+                    selectedId === pos.id 
+                      ? 'bg-gradient-to-br from-saffaron/10 via-white/5 to-transparent border-saffaron/30 text-white md:col-span-2 lg:col-span-2 row-span-2 shadow-[0_0_40px_rgba(255,179,71,0.05)]' 
+                      : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.1] text-white h-56'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <span className={`text-4xl font-black ${selectedId === pos.id ? 'text-saffaron' : 'text-white/10'}`}>
+                      {(globalIndex + 1).toString().padStart(2, '0')}
+                    </span>
+                    {pos.status === 'Open' && (
+                      <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-green-500/20 text-green-400">
+                        Open
+                      </span>
+                    )}
+                  </div>
+
+                  <motion.h3 
+                    layout="position"
+                    className={`font-bold ${selectedId === pos.id ? 'text-5xl mt-6' : 'text-xl'}`}
+                  >
+                    {pos.title}
+                  </motion.h3>
+
+                  {selectedId === pos.id && (
+                    <motion.div 
+                      initial={{ opacity: 0 }} 
+                      animate={{ opacity: 1 }} 
+                      className="mt-8 space-y-8"
+                    >
+                      <p className="text-white/80 text-lg leading-relaxed max-w-xl font-light">{pos.description}</p>
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          scrollToSection('join'); 
+                        }}
+                        className="relative px-8 py-4 rounded-xl font-bold bg-saffaron text-darkSerpent transition-all hover:scale-105"
+                      >
+                        Apply Now
+                      </button>
+                    </motion.div>
+                  )}
+                </motion.div>
+                  );
+                })}
+            </motion.div>
+
+            {/* PAGINATION */}
+            {positions.length > ITEMS_PER_PAGE && (
+              <div className="flex items-center justify-center gap-3 mt-12">
+                <button
+                  onClick={() => { setCurrentPage(p => p - 1); setSelectedId(null); }}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-full border border-white/20 text-white hover:border-saffaron hover:text-saffaron transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {Array.from({ length: Math.ceil(positions.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => { setCurrentPage(page); setSelectedId(null); }}
+                    className={`w-9 h-9 rounded-full text-sm font-bold transition-all cursor-pointer ${
+                      currentPage === page
+                        ? 'bg-saffaron text-darkSerpent'
+                        : 'border border-white/20 text-white hover:border-saffaron hover:text-saffaron'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => { setCurrentPage(p => p + 1); setSelectedId(null); }}
+                  disabled={currentPage === Math.ceil(positions.length / ITEMS_PER_PAGE)}
+                  className="p-2 rounded-full border border-white/20 text-white hover:border-saffaron hover:text-saffaron transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* JOIN US */}
+      <section id="join" className="py-20 bg-white relative">
         <div className="max-w-4xl mx-auto px-6">
           <Animate>
             <div className="text-center mb-15">
               <span className="text-saffaron font-bold text-[10px] uppercase tracking-[0.3em] mb-6 block">Talent Acquisition</span>
-              <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-darkSerpent leading-[0.9]">
-                Shape the <br /><span className="text-darkSerpent/20 italic">Future.</span>
-              </h2>
+              <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-darkSerpent leading-[0.9]">Shape the <br /><span className="text-darkSerpent/20 italic">Future.</span></h2>
             </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-10">
-              <button
-                onClick={() => openModal('apply')}
-                className="group flex flex-row md:flex-col items-center gap-6 md:gap-6 flex-1 w-full md:justify-center cursor-pointer"
-              >
-                <div className="w-20 h-20 rounded-3xl bg-darkSerpent text-white flex items-center justify-center group-hover:bg-saffaron transition-colors duration-300 shadow-md shadow-darkSerpent/20">
-                  <ArrowRight className="w-7 h-7 rotate-[-45deg]" />
-                </div>
-                <div className="text-left md:text-center space-y-1">
-                  <h4 className="text-lg font-bold text-darkSerpent">Join Our Talent Pool</h4>
-                  <p className="text-xs text-saffaron font-bold uppercase tracking-widest">Apply Now</p>
-                </div>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-10">
+              <button onClick={() => openModal('apply')} className="group flex flex-col items-center gap-6 flex-1 w-full justify-center cursor-pointer">
+                <div className="w-20 h-20 rounded-3xl bg-darkSerpent text-white flex items-center justify-center group-hover:bg-saffaron transition-all"><ArrowRight className="w-7 h-7 rotate-[-45deg]" /></div>
+                <div className="space-y-1 text-center"><h4 className="text-lg font-bold">Join Our Talent Pool</h4><p className="text-xs text-saffaron font-bold uppercase tracking-widest">Apply Now</p></div>
               </button>
-
               <div className="hidden md:block w-px h-24 bg-darkSerpent/10" />
-
-              <button 
-                onClick={() => openModal('check')}
-                className="group flex flex-row md:flex-col items-center gap-6 md:gap-6 flex-1 w-full md:justify-center cursor-pointer"
-              >
-                <div className="w-20 h-20 rounded-3xl bg-white border border-darkSerpent/20 text-darkSerpent/60 flex items-center justify-center group-hover:border-earthYellow group-hover:text-saffaron transition-all duration-300">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
-                <div className="text-left md:text-center space-y-1">
-                  <h4 className="text-lg font-bold text-darkSerpent">Check Application</h4>
-                  <p className="text-xs text-saffaron font-bold uppercase tracking-widest">Existing Candidates</p>
-                </div>
+              <button onClick={() => openModal('check')} className="group flex flex-col items-center gap-6 flex-1 w-full justify-center cursor-pointer">
+                <div className="w-20 h-20 rounded-3xl bg-white border border-darkSerpent/20 text-darkSerpent/60 flex items-center justify-center group-hover:border-earthYellow group-hover:text-saffaron transition-all"><ShieldCheck className="w-8 h-8" /></div>
+                <div className="space-y-1 text-center"><h4 className="text-lg font-bold">Check Application</h4><p className="text-xs text-saffaron font-bold uppercase tracking-widest">Existing Candidates</p></div>
               </button>
             </div>
           </Animate>

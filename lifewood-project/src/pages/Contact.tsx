@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Mail, Send, Phone } from 'lucide-react';
 import Animate from '../components/Animate.tsx';
 import Button from '../components/Button.tsx';
+import { Input } from '../components/Input.tsx';
+import { TextArea } from '../components/TextArea.tsx';
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -67,33 +69,10 @@ export default function Contact() {
               <Animate delay={200}>
                 <form onSubmit={handleSubmit} className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
-                    <div className="relative border-b-2 border-darkSerpent/10 focus-within:border-saffaron transition-colors pb-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-darkSerpent/30 block mb-1">Full Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="John Doe"
-                        className="w-full bg-transparent border-none p-0 outline-none text-darkSerpent font-bold placeholder:text-darkSerpent/10"
-                      />
-                    </div>
-                    <div className="relative border-b-2 border-darkSerpent/10 focus-within:border-saffaron transition-colors pb-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-darkSerpent/30 block mb-1">Email Address</label>
-                      <input 
-                        type="email" 
-                        placeholder="john@example.com"
-                        className="w-full bg-transparent border-none p-0 outline-none text-darkSerpent font-bold placeholder:text-darkSerpent/10"
-                      />
-                    </div>
+                      <Input label="Full Name" type="text" placeholder="John Doe"/>
+                      <Input label="Email Address" type="email" placeholder="john@example.com" />
+                      <TextArea label="How can we help?" rows={4} placeholder="Message here..."/>
                   </div>
-
-                  <div className="relative border-b-2 border-darkSerpent/10 focus-within:border-saffaron transition-colors pb-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-darkSerpent/30 block mb-1">How can we help?</label>
-                    <textarea 
-                      rows={4}
-                      placeholder="Message here..."
-                      className="w-full bg-transparent border-none p-0 outline-none text-darkSerpent font-bold resize-none placeholder:text-darkSerpent/10"
-                    />
-                  </div>
-
                   <Button type="submit" className="px-12 py-5 rounded-2xl text-sm uppercase tracking-widest shadow-lg">
                     Send Message <Send className="w-4 h-4" />
                   </Button>

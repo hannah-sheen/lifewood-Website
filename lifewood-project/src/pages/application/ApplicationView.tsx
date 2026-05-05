@@ -159,6 +159,7 @@ import { X, FileText, Mail, Phone, Calendar, MapPin, Loader2 } from 'lucide-reac
 import { formatDateTime, formatDate } from '../../helpers/datetime';
 import { updateApplicationStatus } from './applicationServices';
 import type { ApplicationDetails } from '../types';
+import { showSuccessToast, showErrorToast } from '../../components/Toast';
 
 export default function ApplicationsView({ application, onClose, onStatusUpdate }: { 
   application: ApplicationDetails;
@@ -181,16 +182,13 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
 
     try {
       await updateApplicationStatus(application.applicationId, selectedStatus);
-      
-      // Refresh the parent component
-      if (onStatusUpdate) {
-        onStatusUpdate();
-      }
-      
-      // Close the drawer after successful update
+      if (onStatusUpdate) onStatusUpdate();
       onClose();
+      setTimeout(() => showSuccessToast(`Status updated to "${selectedStatus}"`), 300);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update status');
+      const msg = err instanceof Error ? err.message : 'Failed to update status';
+      setError(msg);
+      showErrorToast(msg);
     } finally {
       setIsUpdating(false);
     }
