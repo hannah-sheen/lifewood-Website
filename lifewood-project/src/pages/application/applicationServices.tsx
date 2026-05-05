@@ -301,7 +301,7 @@ export async function getApplicationDetails(applicationId: string) {
 
   if (applicationError) {
     if (applicationError.code === 'PGRST116') {
-      throw new Error('Application ID not found');
+      throw new Error('Application details not found');
     }
     throw new Error('Failed to fetch application details');
   }

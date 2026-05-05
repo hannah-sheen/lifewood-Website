@@ -1,6 +1,6 @@
 interface LoadingScreenProps {
   message?: string;
-  variant?: 'full' | 'overlay' | 'skeleton';
+  variant?: 'full' | 'overlay' | 'skeleton' | 'modal';
 }
 
 export function LoadingScreen({ 
@@ -81,7 +81,26 @@ export function LoadingScreen({
       </div>
     );
   }
+  
+  if (variant === 'modal') {
+    return (
+      <div className="flex items-center justify-center gap-4 py-4 px-6 bg-white rounded-xl shadow-lg border border-seaSalt">
+        {/* Smaller Spinner */}
+        <div className="relative w-6 h-6">
+          <div className="absolute inset-0 rounded-full border-2 border-saffaron/20" />
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-saffaron border-r-castletonGreen animate-spin" />
+        </div>
+        
+        {/* Compact Text */}
+        {message && (
+          <p className="text-darkSerpent/70 font-semibold text-sm">{message}</p>
+        )}
+      </div>
+    );
+  }
 }
+
+
 
 /**
  * SkeletonLoader Component - Lightweight skeleton placeholder

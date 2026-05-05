@@ -309,7 +309,7 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* PROGRESS INDICATOR */}
-      <div className="mb-12 flex justify-between items-center relative px-2">
+     <div className="mb-14 flex justify-between items-center relative pt-2">
         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-darkSerpent/5 -translate-y-1/2 z-0" />
         <motion.div 
           className="absolute top-1/2 left-0 h-0.5 bg-saffaron -translate-y-1/2 z-0 transition-all duration-500"
@@ -329,7 +329,7 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
             >
               {currentStep > step.id ? <CheckCircle2 className="w-4 h-4 text-darkSerpent" /> : <span className="font-black text-xs">{step.id}</span>}
             </motion.div>
-            <div className="absolute top-11 whitespace-nowrap text-center">
+            <div className="absolute top-11 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
               <p className={`text-[9px] font-black uppercase tracking-widest ${currentStep >= step.id ? 'text-darkSerpent' : 'text-darkSerpent/20'}`}>{step.label}</p>
             </div>
           </div>
@@ -674,7 +674,7 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
         </AnimatePresence>
 
         {/* BUTTONS - Added directly here */}
-        <div className="flex gap-4 pt-8 mt-4 border-t border-darkSerpent/10">
+        <div className="flex gap-4 pt-8 mt-4 border-darkSerpent/10">
           {currentStep > 1 && (
             <Button type="button" onClick={prevStep} variant="outline" className="flex-1 py-4 rounded-2xl text-sm" disabled={isSubmitting}>
               <ArrowLeft className="w-4 h-4" /> Back

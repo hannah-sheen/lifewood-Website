@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Loader2, Clock, FileText, User, Mail, Phone, Calendar, MapPin } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Button from '../../components/Button';
 import { getApplicationDetails } from './applicationServices';
 import type { ApplicationDetails } from '../types';
-import { formatDateTime, formatDate } from '../../helpers/datetime';
+import { formatDateTime } from '../../helpers/datetime';
 import InputField from '../../components/InputField';
 
 export default function ApplicationChecker() {
@@ -11,7 +11,6 @@ export default function ApplicationChecker() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ApplicationDetails | null>(null);
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'details' | 'logs'>('details');
 
   const handleCheck = async () => {
     if (!appId.trim()) {
@@ -25,10 +24,14 @@ export default function ApplicationChecker() {
     
     try {
       const result = await getApplicationDetails(appId.trim());
-      setData(result);
+      
+      const sortedLogs = [...result.logs].sort((a, b) => 
+        new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+      );
+      
+      setData({ ...result, logs: sortedLogs });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch application details');
-      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
@@ -40,172 +43,85 @@ export default function ApplicationChecker() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'bg-saffaron/10 text-saffaron';
-      case 'under review':
-        return 'bg-blue-100 text-blue-700';
-      case 'shortlisted':
-        return 'bg-castletonGreen/10 text-castletonGreen';
-      case 'hired':
-        return 'bg-green-100 text-green-700';
-      case 'declined':
-        return 'bg-red-100 text-red-700';
-      case 'withdrawn':
-        return 'bg-gray-100 text-gray-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
-
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-6">
       {/* Input Section */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-start">
         <div className="flex-1">
           <InputField
             type="text"
-            placeholder="Enter Application ID (e.g., APP020526-001)"
+            placeholder="Enter Application ID..."
             value={appId}
             onChange={(e) => setAppId((e.target as HTMLInputElement).value)}
             onKeyPress={handleKeyPress}
           />
         </div>
-        <Button onClick={handleCheck} disabled={loading || !appId} className="text-sm rounded-xl">
-          {loading ? <Loader2 className="animate-spin w-4 h-4" /> : 'Search'}
+        <Button 
+          onClick={handleCheck} 
+          disabled={loading || !appId} 
+          className="text-xs rounded-xl px-8"
+        >
+          {loading ? <Loader2 className="animate-spin w-4 h-4" /> : 'SEARCH'}
         </Button>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Result Section */}
-      <div className="border border-darkSerpent/10 rounded-2xl p-4">
-        {!data && !loading && !error && (
-          <p className="text-sm text-darkSerpent/40 text-center py-8">
-            Application details will appear here
-          </p>
-        )}
-
-        {loading && (
-          <div className="flex justify-center py-12">
-            <Loader2 className="animate-spin w-8 h-8 text-saffaron" />
+      {/* Integrated Timeline Layout */}
+      <div className={`
+        bg-white border rounded-3xl shadow-sm
+        ${error ? '!bg-red-50 !border-red-500  tsxt-sm uppercase tracking-[0.1em]' : 'border-seaSalt'}
+      `}>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Loader2 className="animate-spin w-8 h-8 text-saffaron mb-4" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent/30">Syncing Record...</p>
           </div>
-        )}
+        ) : error ? (
+          <div className="py-16 text-center text-red-600 font-medium text-sm">
+            {error}
+          </div>
+        ) : data ? (
+         <div className="max-w-2xl mx-auto pb-6">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-darkSerpent/30 py-6 text-center">
+            Application Progress
+          </p>
 
-        {data && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-lg text-darkSerpent">
-                  {data.applicant.firstname} {data.applicant.lastname}
-                </h3>
-                <p className="text-sm text-darkSerpent/60 mt-1">{data.position.title}</p>
-              </div>
-              <div className="text-right">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(data.status)}`}>
-                  {data.status}
-                </span>
-                <p className="text-xs text-darkSerpent/30 mt-2">
-                  Submitted: {formatDateTime(data.dateSubmitted)}
-                </p>
-              </div>
-            </div>
+          <div className="space-y-10">
+            {data.logs.map((log, i) => {
+              const isLatest = i === 0;
+              return (
+                <div key={i} className="relative pl-8">
+                  {/* Connector Line: Now perfectly aligned to the center of the nodes */}
+                  {i !== data.logs.length - 1 && (
+                    <div className="absolute left-[3px] top-[14px] bottom-[-40px] w-[2px] bg-darkSerpent/10" />
+                  )}
 
-            {/* Tabs */}
-            <div className="flex gap-6 border-b border-darkSerpent/10">
-              <button
-                onClick={() => setActiveTab('details')}
-                className={`pb-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${
-                  activeTab === 'details' ? 'text-saffaron border-b-2 border-saffaron' : 'text-darkSerpent/30 hover:text-darkSerpent/60'
-                }`}
-              >
-                <User className="w-3 h-3" /> Personal Details
-              </button>
-              <button
-                onClick={() => setActiveTab('logs')}
-                className={`pb-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${
-                  activeTab === 'logs' ? 'text-saffaron border-b-2 border-saffaron' : 'text-darkSerpent/30 hover:text-darkSerpent/60'
-                }`}
-              >
-                <Clock className="w-3 h-3" /> Application Timeline ({data.logs.length})
-              </button>
-            </div>
-
-            {/* Tab Content */}
-            <div className="pt-4">
-                {activeTab === 'details' ? (
-                    <div className="space-y-5">
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
-                        <div>
-                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                            <Mail className="w-3 h-3" /> Email
-                        </p>
-                        <p className="text-sm font-medium text-darkSerpent truncate">{data.applicant.email}</p>
-                        </div>
-                        <div>
-                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                            <Phone className="w-3 h-3" /> Phone
-                        </p>
-                        <p className="text-sm font-medium text-darkSerpent">{data.applicant.phone}</p>
-                        </div>
-                        <div>
-                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> Date of Birth
-                        </p>
-                        <p className="text-sm font-medium text-darkSerpent">
-                            {formatDate(data.applicant.dob)}
-                        </p>
-                        </div>
-                        <div>
-                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest">Gender</p>
-                        <p className="text-sm font-medium text-darkSerpent">{data.applicant.gender}</p>
-                        </div>
-                        <div className="col-span-2">
-                        <p className="text-[9px] uppercase font-bold text-darkSerpent/30 tracking-widest flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> Address
-                        </p>
-                        <p className="text-sm font-medium text-darkSerpent leading-snug">{data.applicant.address}</p>
-                        </div>
-                    </div>
-                    
-                    {data.applicant.resume && (
-                        <a 
-                        href={data.applicant.resume} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-xs text-saffaron hover:underline inline-flex items-center gap-1 font-bold pt-1"
-                        >
-                        <FileText className="w-3 h-3" /> View Resume
-                        </a>
-                    )}
-                    </div>
-                ) : (
-                   <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-darkSerpent/10 scrollbar-track-transparent">
-                     {data.logs.length === 0 ? (
-                    <p className="text-sm text-darkSerpent/40 text-center py-4">No timeline updates yet</p>
+                  {/* Timeline Node: Increased z-index to stay above the line */}
+                  <div className={`absolute left-[-5px] top-[1px] w-4 h-4 rounded-full border-[3px] border-white z-10
+                    ${isLatest ? 'bg-saffaron ring-2 ring-saffaron/20' : 'bg-darkSerpent/20'}`} 
+                  />
+                  
+                  {/* Content Row: Improved spacing and alignment */}
+                  <div className="flex items-center justify-between gap-6 pb-2">
+                    {isLatest ? (
+                      <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-saffaron/10 text-saffaron text-[11px] font-black uppercase tracking-wider">
+                        {log.status}
+                      </div>
                     ) : (
-                    data.logs.map((log, i) => (
-                        <div key={i} className="flex justify-between items-center border-b border-darkSerpent/5 pb-2 last:border-0">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-saffaron" />
-                            <span className="text-xs font-medium text-darkSerpent/80">{log.status}</span>
-                        </div>
-                        <span className="text-darkSerpent/30 text-xs whitespace-nowrap ml-4">
-                            {formatDateTime(log.datetime)}
-                        </span>
-                        </div>
-                    ))
+                      <p className="text-sm font-semibold text-darkSerpent/60">{log.status}</p>
                     )}
+                    
+                    <p className="text-xs text-darkSerpent/30 font-medium whitespace-nowrap tabular-nums">
+                      {formatDateTime(log.datetime)}
+                    </p>
+                  </div>
                 </div>
-                )}
-                </div>
+              );
+            })}
+          </div>
+        </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent/20">Application Details will appear here</p>
           </div>
         )}
       </div>

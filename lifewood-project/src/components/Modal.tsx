@@ -51,16 +51,16 @@ export default function Modal({ isOpen, onClose, children, title, subtitle, foot
 
             {/* Sticky Header */}
             {(title || subtitle) && (
-              <div className="pt-10 px-10 md:pt-16 md:px-16 shrink-0">
+              <div className="pt-10 px-10 md:pt-16 md:px-16 pb-8 shrink-0">
                 <div className="max-w-3xl mx-auto">
                   {title && <h2 className="text-3xl font-bold tracking-tighter text-darkSerpent">{title}</h2>}
-                  {subtitle && <p className="text-darkSerpent/40 text-sm italic">{subtitle}</p>}
+                  {subtitle && <p className="text-darkSerpent/40 text-sm italic mt-2">{subtitle}</p>}
                 </div>
               </div>
             )}
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto modal-scroll p-10 md:p-16">
+            <div className={`flex-1 overflow-y-auto modal-scroll ${title || subtitle ? '' : 'pt-10 md:pt-16'} px-10 md:px-16 pb-10 md:pb-16`}>
               <div className="max-w-3xl mx-auto">
                 {children}
               </div>
