@@ -51,11 +51,12 @@ export default function ConfirmationModal({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
+              onClick={(e) => e.stopPropagation()} 
+              // Changed max-w-sm to max-w-lg for a wider, more spacious feel
+              className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-gray-100"
             >
               <h3 className="text-xl font-bold text-darkSerpent mb-3">{title}</h3>
-              <p className="text-gray-600 mb-8">{message}</p>
+              <p className="text-gray-600 mb-8 leading-relaxed">{message}</p>
 
               <div className="flex gap-3 justify-end">
                 <button

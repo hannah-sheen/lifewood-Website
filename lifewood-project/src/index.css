@@ -124,3 +124,12 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(19,48,32,0.4) #F9F7F7;
 }
+
+@keyframes border-trail {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-border-trail {
+  animation: border-trail 4s linear infinite; 
+}

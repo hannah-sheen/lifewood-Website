@@ -37,15 +37,10 @@ export async function fetchPositionById(id: number) {
 }
 
 // Add new position
-export async function addPosition(title: string, description: string, status: string = 'active') {
+export async function addPosition(title: string, description: string, status: string = 'active', is_urgent: boolean = false) {
   const { data, error } = await supabase
     .from('position')
-    .insert([{ 
-      title, 
-      description, 
-      status,
-      is_archive: false 
-    }])
+    .insert([{ title, description, status, is_urgent, is_archive: false }])
     .select();
   
   if (error) throw new Error(error.message);
@@ -58,6 +53,7 @@ export async function updatePosition(id: number, updates: {
   description?: string;
   status?: string;
   is_archive?: boolean;
+  is_urgent?: boolean;
 }) {
   const { data, error } = await supabase
     .from('position')

@@ -191,11 +191,18 @@ export default function Careers() {
                     <span className={`text-4xl font-black ${selectedId === pos.id ? 'text-saffaron' : 'text-white/10'}`}>
                       {(globalIndex + 1).toString().padStart(2, '0')}
                     </span>
-                    {pos.status === 'Open' && (
-                      <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-green-500/20 text-green-400">
-                        Open
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {pos.is_urgent && (
+                        <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
+                          🔴 Urgent
+                        </span>
+                      )}
+                      {pos.status === 'Open' && (
+                        <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-green-500/20 text-green-400">
+                          Open
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <motion.h3 

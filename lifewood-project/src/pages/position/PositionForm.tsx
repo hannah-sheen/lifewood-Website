@@ -170,6 +170,7 @@ interface PositionFormProps {
     title: string;
     description: string;
     status: string;
+    is_urgent?: boolean;
   };
   onClose: () => void;
   onSuccess: () => void;
@@ -179,7 +180,8 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     description: initialData?.description || '',
-    status: initialData?.status || (isEditMode ? '' : 'Open') // Default to 'Open' when not in edit mode
+    status: initialData?.status || (isEditMode ? '' : 'Open'),
+    is_urgent: initialData?.is_urgent ?? false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -206,13 +208,15 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
         await updatePosition(initialData.id, {
           title: formData.title.trim(),
           description: formData.description.trim(),
-          status: formData.status.toLowerCase()
+          status: formData.status.toLowerCase(),
+          is_urgent: formData.is_urgent,
         });
       } else {
         await addPosition(
           formData.title.trim(),
           formData.description.trim(),
-          formData.status.toLowerCase()
+          formData.status.toLowerCase(),
+          formData.is_urgent,
         );
       }
       
@@ -284,6 +288,34 @@ export function PositionForm({ isEditMode, initialData, onClose, onSuccess }: Po
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Urgent Toggle */}
+      <div>
+        <label className={`block text-xs font-bold uppercase mb-2 tracking-widest ${ formData.status === 'Full' ? 'text-darkSerpent/20' : 'text-castletonGreen' }`}>
+          Urgent Hiring
+        </label>
+        <button
+          type="button"
+          disabled={loading || formData.status === 'Full'}
+          onClick={() => setFormData(p => ({ ...p, is_urgent: !p.is_urgent }))}
+          className={`relative w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+            formData.status === 'Full'
+              ? 'bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed'
+              : formData.is_urgent
+                ? 'bg-red-50 border-red-300 cursor-pointer'
+                : 'bg-seaSalt border-gray-200 cursor-pointer'
+          }`}
+        >
+          <span className={`text-sm font-bold ${
+            formData.status === 'Full' ? 'text-darkSerpent/30' : formData.is_urgent ? 'text-red-600' : 'text-darkSerpent/40'
+          }`}>
+            {formData.status === 'Full' ? 'Not available when Full' : formData.is_urgent ? '🔴 Urgent — Hiring Immediately' : 'Not Urgent'}
+          </span>
+          <div className={`w-11 h-6 rounded-full transition-colors relative ${ formData.is_urgent && formData.status !== 'Full' ? 'bg-red-500' : 'bg-gray-300' }`}>
+            <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${ formData.is_urgent && formData.status !== 'Full' ? 'translate-x-5' : 'translate-x-0.5' }`} />
+          </div>
+        </button>
       </div>
 
       {/* Action Buttons */}

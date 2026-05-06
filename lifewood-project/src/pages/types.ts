@@ -4,6 +4,7 @@ export type Position={
     description: string;
     status: string;
     is_archive: boolean;
+    is_urgent: boolean;
 }
 
 export type Applicant = {
