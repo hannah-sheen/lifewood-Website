@@ -478,22 +478,48 @@ export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
   return applicationsWithDetails;
 }
 
+export async function sendStatusUpdateEmail(
+  applicantName: string,
+  applicantEmail: string,
+  applicationId: string,
+  position: string,
+  newStatus: string,
+  message: string
+) {
+  try {
+    await fetch('http://localhost:3001/api/status-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applicantName, applicantEmail, applicationId, position, newStatus, message }),
+    });
+  } catch (err) {
+    console.warn('Status update email failed (non-critical):', err);
+  }
+}
+
 export async function updateApplicationStatus(applicationId: string, newStatus: string): Promise<void> {
-  // Get the current datetime
   const currentDateTime = new Date().toISOString();
-  
-  // Insert new log entry
+
+  // Get current session to resolve admin id
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated.');
+
+  const { data: adminData, error: adminError } = await supabase
+    .from('admin')
+    .select('id')
+    .eq('auth_uid', session.user.id)
+    .single();
+
+  if (adminError || !adminData) throw new Error('Admin not found.');
+
   const { error: logError } = await supabase
     .from('application_log')
     .insert({
       datetime: currentDateTime,
       app_id: applicationId,
-      status: newStatus
+      status: newStatus,
+      adm_id: adminData.id
     });
 
-  if (logError) {
-    throw new Error('Failed to update application status');
-  }
-  
-  return;
+  if (logError) throw new Error('Failed to update application status');
 }

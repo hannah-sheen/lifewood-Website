@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import dataTechImg from '../../assets/login/data_tech.jpeg';
@@ -7,6 +7,7 @@ import Button from '../../components/Button.tsx';
 import { loginAuth } from './authService.tsx';
 import InputField from '../../components/InputField.tsx';
 import { showSuccessToast, showErrorToast } from '../../components/Toast.tsx';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,15 +16,38 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkAlreadyLoggedIn = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Check if admin
+        const { data: adminData } = await supabase
+          .from('admin')
+          .select('id')
+          .eq('auth_uid', session.user.id)
+          .single();
+        
+        if (adminData) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          // If logged in but not admin, sign out
+          await supabase.auth.signOut();
+        }
+      }
+    };
+    checkAlreadyLoggedIn();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     try {
       const authData = await loginAuth(email, password);
-      const userId = authData.user.id; 
-      showSuccessToast('Signed in successfully!');
-      navigate('/dashboard');
+      showSuccessToast(`Welcome back, ${authData.admin.firstname}!`);
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Invalid email or password';
       setError(msg);
@@ -39,20 +63,20 @@ export default function LoginPage() {
       <div className="w-full lg:w-[450px] flex flex-col justify-center px-8 md:px-16 bg-white shadow-xl z-20 relative">
         
         <button 
-          onClick={() => navigate(-1)} 
+          onClick={() => navigate('/')} 
           type="button"
           className="absolute top-12 left-8 md:left-16 flex items-center gap-2 text-darkSerpent hover:text-saffaron transition-colors group text-sm font-bold z-50"
         >
           <ChevronLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-          <span>Back</span>
+          <span>Home</span>
         </button>
 
         <div className="mb-10 mt-20 lg:mt-0">
           <div className="mb-6">
             <img src={lifewoodLogo} alt="Lifewood" className="h-8 w-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-darkSerpent tracking-tight">Welcome back</h1>
-          <p className="text-darkSerpent/50 mt-2">Enter your credentials to access your dashboard.</p>
+          <h1 className="text-3xl font-bold text-darkSerpent tracking-tight">Admin Access</h1>
+          <p className="text-darkSerpent/50 mt-2">Enter your credentials to access the dashboard.</p>
         </div>
 
         {error && (
@@ -63,26 +87,26 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <InputField
-              label="Email Address"
-              icon={<Mail />}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@company.com"
-              required
-              disabled={loading}
-            />
+            label="Email Address"
+            icon={<Mail />}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="admin@lifewood.com"
+            required
+            disabled={loading}
+          />
 
           <InputField
-              label="Password"
-              icon={<Lock />}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              disabled={loading}
-            />
+            label="Password"
+            icon={<Lock />}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            disabled={loading}
+          />
 
           <Button type="submit" className="w-full py-4 rounded-xl shadow-lg shadow-darkSerpent/20" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
@@ -91,7 +115,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-8 text-sm text-center text-darkSerpent/40">
-          Don't have an account? <a href="#" className="text-darkSerpent font-bold hover:underline">Contact Admin</a>
+          Unauthorized access is prohibited.
         </p>
       </div>
 
@@ -106,10 +130,10 @@ export default function LoginPage() {
         </div>
 
         <div className="absolute bottom-20 left-20 right-20 text-white z-20">
-          <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Inclusive Intelligence</span>
+          <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Secure Access</span>
           <h2 className="text-5xl font-bold leading-tight mb-6">
-            Empowering the future <br /> 
-            <span className="text-white/40 italic">through data.</span>
+            Admin Portal <br /> 
+            <span className="text-white/40 italic">Restricted Area.</span>
           </h2>
           <div className="h-1 w-20 bg-saffaron rounded-full" />
         </div>

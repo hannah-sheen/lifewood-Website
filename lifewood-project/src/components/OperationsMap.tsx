@@ -110,7 +110,7 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
 
     svg.selectAll('*').remove();
 
-    const g = svg.append('g');
+    const g = svg.append('g').style('will-change', 'transform');
     gRef.current = g;
 
     const projection = d3.geoMercator()
@@ -167,8 +167,15 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
             );
             d3.select(this).attr('fill', hasOffice ? '#FFC370' : '#0a5a3a');
           })
-          .on('mouseleave', function(this: any) {
-            d3.select(this).attr('fill', '#046241');
+          .on('mouseleave', function(this: any, _e: any, d: any) {
+            const name = d.properties?.name || '';
+            const isSelected = selectedCountryRef.current && OFFICE_LOCATIONS.some(o =>
+              o.name === selectedCountryRef.current && (
+                name.toLowerCase().includes(o.name.toLowerCase()) ||
+                o.name.toLowerCase().includes(name.toLowerCase())
+              )
+            );
+            d3.select(this).attr('fill', isSelected ? '#FFB347' : '#046241');
           })
           .on('click', (_e: any, d: any) => {
             const name = d.properties?.name || '';
@@ -182,18 +189,33 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
             }
           });
 
-        // Pulse rings
-        g.selectAll('.pulse')
+        // Pulse rings — animate opacity only (GPU composited, no layout)
+        const pulseCircles = g.selectAll('.pulse')
           .data(OFFICE_LOCATIONS)
           .enter()
           .append('circle')
           .attr('class', 'pulse')
           .attr('cx', d => projection([d.lng, d.lat])![0])
           .attr('cy', d => projection([d.lng, d.lat])![1])
-          .attr('r', 8)
-          .attr('fill', '#FFB347')
-          .attr('fill-opacity', 0.35)
-          .style('animation', 'mapPulse 2s ease-out infinite');
+          .attr('r', 14)
+          .attr('fill', 'none')
+          .attr('stroke', '#FFB347')
+          .attr('stroke-width', 1.5)
+          .attr('opacity', 0);
+
+        // Stagger pulse animation per marker using D3 transition loops
+        pulseCircles.each(function(_, i) {
+          const circle = d3.select(this);
+          const delay = (i / OFFICE_LOCATIONS.length) * 2000;
+          function pulse() {
+            circle
+              .attr('opacity', 0.8)
+              .transition().duration(1500).ease(d3.easeCubicOut)
+              .attr('opacity', 0)
+              .on('end', pulse);
+          }
+          setTimeout(pulse, delay);
+        });
 
         // Markers
         g.selectAll('.marker')
@@ -225,12 +247,6 @@ const OperationsMap = forwardRef(({ selectedCountry: externalSelectedCountry }: 
 
   return (
     <>
-      <style>{`
-        @keyframes mapPulse {
-          0% { r: 6; opacity: 0.5; }
-          100% { r: 22; opacity: 0; }
-        }
-      `}</style>
       <div ref={containerRef} className="relative w-full bg-darkSerpent rounded-2xl overflow-hidden" style={{ height: '100%', minHeight: '550px' }}>
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
           <button onClick={() => d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 1.3)} className="w-10 h-10 bg-castletonGreen text-white rounded-lg hover:bg-saffaron transition-all shadow-lg flex items-center justify-center text-xl font-bold border-white border-2 cursor-pointer">+</button>

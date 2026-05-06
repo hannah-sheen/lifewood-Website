@@ -82,6 +82,44 @@ body {
   background: linear-gradient(180deg, rgba(4,98,65,0.6), rgba(255,179,71,0.6));
 }
 
+/* Legal prose styles */
+.prose-legal h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #133020;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(19,48,32,0.08);
+}
+.prose-legal p {
+  font-size: 14px;
+  color: rgba(19,48,32,0.65);
+  line-height: 1.8;
+  margin: 0.6rem 0;
+}
+.prose-legal ul {
+  margin: 0.6rem 0 0.6rem 1.25rem;
+  list-style: disc;
+}
+.prose-legal ul li {
+  font-size: 14px;
+  color: rgba(19,48,32,0.65);
+  line-height: 1.8;
+  margin-bottom: 0.25rem;
+}
+.prose-legal a {
+  color: #046241;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-legal strong {
+  color: #133020;
+  font-weight: 700;
+}
+
 .modal-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(19,48,32,0.4) #F9F7F7;

@@ -1,7 +1,15 @@
 import lifewoodPaperLogo from '../assets/lifewood-paper-logo.avif';
-import { Mail, Phone } from 'lucide-react'; // Assuming you're using Lucide for the rest of the site
+import { Mail, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function Footer() {
+export default function Footer({ onShowCookieBanner }: { onShowCookieBanner?: () => void }) {
+  const navigate = useNavigate();
+
+  const navTo = (path: string, hash?: string) => {
+    navigate(path);
+    if (hash) setTimeout(() => document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
   return (
     <footer className="bg-darkSerpent text-paper py-10">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-10">
@@ -10,18 +18,45 @@ export default function Footer() {
           <div className="mb-6">
             <img src={lifewoodPaperLogo} alt="Lifewood" className="h-8 w-auto" />
           </div>
-          <p className="text-sm opacity-80 max-w-xs">
+          <p className="text-sm opacity-80 max-w-xs mb-6">
             We provide global Data Engineering Services to enable AI Solutions.
           </p>
+          <div className="mt-6 flex flex-wrap gap-x-3 gap-y-1.5">
+            <p className="w-full text-[9px] font-bold uppercase tracking-widest text-white/20 mb-1">Legal</p>
+            {[
+              { to: '/privacy-policy', label: 'Privacy Policy' },
+              { to: '/cookie-policy', label: 'Cookie Policy' },
+              { to: '/terms-and-conditions', label: 'Terms & Conditions' },
+            ].map(({ to, label }, i, arr) => (
+              <span key={to} className="flex items-center gap-3">
+                <button onClick={() => navigate(to)} className="text-[11px] opacity-50 hover:opacity-100 hover:text-saffaron transition-all cursor-pointer">
+                  {label}
+                </button>
+                {i < arr.length - 1 && <span className="w-px h-2.5 bg-white/20" />}
+              </span>
+            ))}
+            <span className="flex items-center gap-3">
+              <span className="w-px h-2.5 bg-white/20" />
+              <button
+                onClick={onShowCookieBanner}
+                className="text-[11px] opacity-50 hover:opacity-100 hover:text-saffaron transition-all cursor-pointer"
+              >
+                Cookie Settings
+              </button>
+            </span>
+          </div>
         </div>
 
         {/* Column 2: Links */}
         <div>
           <h4 className="font-semibold mb-4 text-earthYellow">Quick Links</h4>
           <ul className="space-y-2 text-sm opacity-80">
-            <li><a href="#global" className="hover:text-saffaron transition-colors">Global Footprint</a></li>
-            <li><a href="#clients" className="hover:text-saffaron transition-colors">Our Clients</a></li>
-            <li><a href="#innovation" className="hover:text-saffaron transition-colors">Innovation</a></li>
+            <li><button onClick={() => navTo('/', 'about')} className="hover:text-saffaron transition-colors cursor-pointer">About Us</button></li>
+            <li><button onClick={() => navTo('/', 'global')} className="hover:text-saffaron transition-colors cursor-pointer">Global Footprint</button></li>
+            <li><button onClick={() => navTo('/', 'clients')} className="hover:text-saffaron transition-colors cursor-pointer">Our Clients</button></li>
+            <li><button onClick={() => navTo('/about', 'vision')} className="hover:text-saffaron transition-colors cursor-pointer">Vision & Mission</button></li>
+            <li><button onClick={() => navTo('/about', 'values')} className="hover:text-saffaron transition-colors cursor-pointer">Core Values</button></li>
+            <li><button onClick={() => navTo('/about', 'offices')} className="hover:text-saffaron transition-colors cursor-pointer">Our Offices</button></li>
           </ul>
         </div>
 

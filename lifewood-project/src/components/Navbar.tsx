@@ -28,15 +28,17 @@ export default function Navbar() {
       <div className="w-full px-8 lg:px-14 flex items-center justify-between h-15">
 
         {/* Logo */}
-        <img
-          src={lifewoodLogo}
-          alt="Lifewood"
-          className="shrink-0 cursor-pointer opacity-95 hover:opacity-100 transition-opacity h-8 w-auto"
-          onClick={() => navigate('/')}
-        />
+        <div className="flex-1">
+          <img
+            src={lifewoodLogo}
+            alt="Lifewood"
+            className="shrink-0 cursor-pointer opacity-95 hover:opacity-100 transition-opacity h-10 w-auto"
+            onClick={() => navigate('/')}
+          />
+        </div>
 
-        {/* Nav Links */}
-        <div className="hidden lg:flex items-center gap-8">
+        {/* Nav Links - Centered */}
+        <div className="hidden lg:flex items-center justify-center gap-8 flex-1">
           {NAV_ITEMS.map(({ label, path }) => {
             const active = isActive(path);
             return (
@@ -59,20 +61,8 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Right: Login + Hamburger */}
-        <div className="flex items-center gap-4">
-          {/* Login Button */}
-          <button
-            onClick={() => navigate('/login')}
-            className={`hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
-              isActive('/login')
-                ? 'bg-darkSerpent text-saffaron shadow-lg'
-                : 'bg-gradient-to-r from-darkSerpent to-castletonGreen text-white hover:shadow-lg hover:scale-105 active:scale-95'
-            }`}
-          >
-            Get Started
-          </button>
-
+        {/* Right side - empty div to balance the layout */}
+        <div className="flex-1 flex justify-end">
           {/* Hamburger */}
           <button
             className="lg:hidden p-2 text-darkSerpent cursor-pointer"
@@ -100,12 +90,6 @@ export default function Navbar() {
             {label}
           </div>
         ))}
-        <button
-          onClick={() => { navigate('/login'); setMenuOpen(false); }}
-          className="mt-4 w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-darkSerpent/20 text-darkSerpent text-sm font-semibold hover:bg-darkSerpent hover:text-white transition-all duration-200"
-        >
-          Get Started
-        </button>
       </div>
     </nav>
   );

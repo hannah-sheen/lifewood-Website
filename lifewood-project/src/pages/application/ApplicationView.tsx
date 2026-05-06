@@ -157,7 +157,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, FileText, Mail, Phone, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { formatDateTime, formatDate } from '../../helpers/datetime';
-import { updateApplicationStatus } from './applicationServices';
+import { updateApplicationStatus, sendStatusUpdateEmail } from './applicationServices';
 import type { ApplicationDetails } from '../types';
 import { showSuccessToast, showErrorToast } from '../../components/Toast';
 
@@ -168,6 +168,7 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
 }) {
   const [activeTab, setActiveTab] = useState<'details' | 'logs'>('details');
   const [selectedStatus, setSelectedStatus] = useState<string>(application.status);
+  const [message, setMessage] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -182,6 +183,14 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
 
     try {
       await updateApplicationStatus(application.applicationId, selectedStatus);
+      sendStatusUpdateEmail(
+        `${application.applicant.firstname} ${application.applicant.lastname}`,
+        application.applicant.email,
+        application.applicationId,
+        application.position.title,
+        selectedStatus,
+        message.trim()
+      );
       if (onStatusUpdate) onStatusUpdate();
       onClose();
       setTimeout(() => showSuccessToast(`Status updated to "${selectedStatus}"`), 300);
@@ -331,7 +340,7 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
             Update Application Status
           </p>
           
-          <div className="flex gap-2">    
+          <div className="flex gap-2 mb-3">    
             <select 
               className="flex-1 px-4 py-2.5 bg-seaSalt rounded-xl text-sm text-darkSerpent font-medium outline-none focus:ring-2 ring-saffaron/50 border border-transparent hover:border-gray-200 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               value={selectedStatus}
@@ -353,10 +362,19 @@ export default function ApplicationsView({ application, onClose, onStatusUpdate 
               {isUpdating ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Updating...</>
               ) : (
-                'Update Status'
+                'Update'
               )}
             </button>
           </div>
+
+          <textarea
+            rows={3}
+            placeholder="Add a message to the applicant (optional)..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={isUpdating}
+            className="w-full px-4 py-3 bg-seaSalt rounded-xl text-sm text-darkSerpent outline-none focus:ring-2 ring-saffaron/50 border border-transparent hover:border-gray-200 transition-all resize-none disabled:opacity-50"
+          />
           
           {error && (
             <p className="text-red-500 text-xs mt-3">{error}</p>
