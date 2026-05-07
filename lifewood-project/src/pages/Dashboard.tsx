@@ -237,12 +237,8 @@ import { useState } from 'react';
 import { TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import ConfirmationModal from '../components/ConfirmationModal';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import Position from './position/Positions';
 import Applications from './application/Applications';
-import { showSuccessToast, showErrorToast } from '../components/Toast';
 import DashboardSidebar from '../components/DashboardSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 
@@ -278,42 +274,10 @@ const hiringVelocityData = [
   { position: 'Strategy', days: 13 },
 ];
 
-const ADMIN_LOGIN_PATH = import.meta.env.VITE_ADMIN_LOGIN_PATH;
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const navigate = useNavigate();
-
-  const confirmLogout = async () => {
-    setIsLoggingOut(true);
-    
-    try {
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
-      
-      // Clear any session storage items
-      sessionStorage.removeItem('admin_access');
-      sessionStorage.removeItem('adminName');
-      sessionStorage.removeItem('adminUsername');
-      sessionStorage.removeItem('security_verified');
-      
-      showSuccessToast('Logged out successfully');
-      setShowLogoutModal(false);
-      
-      // Navigate to login page (the secret admin path)
-      navigate(`${ADMIN_LOGIN_PATH}?key=${import.meta.env.VITE_ADMIN_SECRET_KEY}`, { replace: true });
-    } catch (error) {
-      // console.error('Logout error:', error);
-      showErrorToast('Failed to logout. Please try again.');
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   return (
     <div className="flex h-screen bg-seaSalt font-sans text-darkSerpent overflow-hidden">
@@ -322,7 +286,6 @@ export default function AdminDashboard() {
         isCollapsed={isCollapsed}
         onTabChange={setActiveTab}
         onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-        onLogout={() => setShowLogoutModal(true)}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -343,19 +306,7 @@ export default function AdminDashboard() {
             </motion.div>
           </AnimatePresence>
         </main>
-      </div>
-
-      <ConfirmationModal
-        isOpen={showLogoutModal}
-        title="Logout Confirmation"
-        message="Are you sure you want to logout?"
-        buttonName="Logout"
-        isDangerous={true}
-        onConfirm={confirmLogout}
-        onCancel={() => setShowLogoutModal(false)}
-        loadingText="Logging out..."
-        isLoading={isLoggingOut}
-      />
+      </div>    
     </div>
   );
 }

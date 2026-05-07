@@ -37,7 +37,7 @@ export default function Pagination({
           <select
             value={itemsPerPage}
             onChange={handleItemsPerPage}
-            className="bg-seaSalt/50 border border-seaSalt rounded-lg px-2 py-1 outline-none text-darkSerpent cursor-pointer focus:ring-1 ring-saffaron"
+            className="bg-seaSalt/50 border border-darkSerpent/10 rounded-lg px-2 py-1 outline-none text-darkSerpent cursor-pointer focus:ring-1 ring-saffaron"
           >
             {itemsPerPageOptions.map(n => (
               <option key={n} value={n}>{n}</option>

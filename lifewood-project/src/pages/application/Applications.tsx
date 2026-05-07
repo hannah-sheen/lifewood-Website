@@ -7,7 +7,8 @@ import type { ApplicationDetails } from '../types';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import ApplicationsView from './ApplicationView';
 import InputField from '../../components/InputField';
-
+import ComboBox from '../../components/ComboBox';
+import ApplicationMetrics from './ApplicationMetric';
 
 const STATUS_OPTIONS = ['All', 'Pending', 'Shortlisted', 'Hired', 'Not Selected', 'Declined', 'Withdrawn'];
 
@@ -119,44 +120,54 @@ export default function Applications() {
   const colWidths = ['w-[14%]', 'w-[22%]', 'w-[22%]', 'w-[20%]', 'w-[22%]'];
 
   return (
-  <div className="flex flex-col h-full gap-5">
+  <div className="flex flex-col h-full">
     {/* Header */}
-    <div className="flex-shrink-0 flex items-start justify-between">
+   <div className="flex-shrink-0 flex items-start justify-between pb-6">
       <div>
-        <h2 className="text-3xl font-bold text-darkSerpent">Applications</h2>
-        <p className="text-gray-500 text-sm mt-1">Review, track, and manage all incoming job applications</p>
+        <h2 className="text-2xl font-bold text-darkSerpent">Applications</h2>
+        <p className="text-gray-500 text-xs mt-1">Review, track, and manage all incoming job applications</p>
       </div>
     </div>
 
-    {/* Search + Filters */}
-    <div className="flex-shrink-0 flex gap-3 items-center">
-      <div className="flex-1">
+    {/* ADD THE METRICS HERE */}
+    <ApplicationMetrics applications={applications} />
+
+    {/* Search + Filters Container */}
+    <div className="flex-shrink-0 flex gap-3 items-center justify-start py-4">
+      
+      {/* Search Bar - Defined width to prevent stretching */}
+      <div className="relative flex-grow sm:max-w-lg"> 
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-darkSerpent/30" />
         <InputField
-          icon={<Search />}
+          type="text"
+          placeholder="Search..."
           value={search}
-          onChange={e => { setSearch((e.target as HTMLInputElement).value); setCurrentPage(1); }}
-          placeholder="Search by name, ID, position or email..."
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 bg-white border border-darkSerpent/10 rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/40 transition-all text-darkSerpent"
         />
       </div>
-      <div className="relative">
-        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-darkSerpent/30" />
-        <select
+      {/* Status Filter - Clean ComboBox */}
+      <div className="w-44">
+        <ComboBox
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          className="pl-8 pr-8 py-2.5 bg-white border border-seaSalt rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/40 transition-all appearance-none cursor-pointer text-darkSerpent font-medium"
-        >
-          {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-        </select>
+          onChange={(val) => setStatusFilter(val as any)}
+          options={STATUS_OPTIONS.map(s => ({ 
+            label: s, 
+            value: s 
+          }))}
+        />
       </div>
-      <div className="relative">
-        <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-darkSerpent/30" />
-        <select
+
+      {/* Position Filter - Clean ComboBox */}
+      <div className="w-52">
+        <ComboBox
           value={positionFilter}
-          onChange={e => setPositionFilter(e.target.value)}
-          className="pl-8 pr-8 py-2.5 bg-white border border-seaSalt rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/40 transition-all appearance-none cursor-pointer text-darkSerpent font-medium max-w-[180px]"
-        >
-          {positions.map(p => <option key={p}>{p}</option>)}
-        </select>
+          onChange={(val) => { setPositionFilter(val as any); setCurrentPage(1); }}
+          options={positions.map(p => ({ 
+            label: p, 
+            value: p 
+          }))}
+        />
       </div>
     </div>
 
