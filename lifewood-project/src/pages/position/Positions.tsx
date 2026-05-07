@@ -12,6 +12,7 @@
 // import InputField from "../../components/InputField";
 // import ComboBox from "../../components/ComboBox";
 // import Pagination from "../../components/Pagination";
+// import PositionsMetrics from "./Metric";
 
 // export default function Position() {
 //   const [showForm, setShowForm] = useState(false);
@@ -79,10 +80,10 @@
 //     try {
 //       if (positionToArchive.isArchived) {
 //         await restorePosition(positionToArchive.id);
-//         showSuccessToast(`"${positionToArchive.title}" restored successfully!`);
+//         showSuccessToast('Position restored successfully!');
 //       } else {
 //         await archivePosition(positionToArchive.id);
-//         showSuccessToast(`"${positionToArchive.title}" archived successfully!`);
+//         showSuccessToast('Position archived successfully!');
 //       }
 //       await loadPositions();
 //     } catch (error) {
@@ -141,15 +142,24 @@
 //   const totalPages = Math.max(1, Math.ceil(filteredPositions.length / itemsPerPage));
 
 //   const getStatusStyle = (status: string) => {
-//     switch (status?.toLowerCase()) {
-//       case 'open': return 'bg-saffaron/10 text-saffaron';
-//       case 'full': return 'bg-darkSerpent text-white';
-//       default: return 'bg-gray-100 text-gray-600';
-//     }
-//   };
+//   switch (status?.toLowerCase()) {
+//     case 'open':
+//       // Vibrant but subtle: Saffaron with a hint of border
+//       return 'bg-saffaron/10 text-saffaron border border-saffaron/20';
+//     case 'full':
+//       // Sophisticated: Castleton Green with a border
+//       return 'bg-castletonGreen/10 text-castletonGreen border border-castletonGreen/20';
+//     case 'urgent':
+//       // High alert: Red with a subtle border
+//       return 'bg-red-50 text-red-600 border border-red-200';
+//     default:
+//       // Neutral: Subtle grey
+//       return 'bg-gray-100 text-gray-600 border border-gray-200';
+//   }
+// };
 
 //   return (
-//     <div className="flex flex-col h-full">
+//     <div className="h-full overflow-y-auto">
 //       {/* Header */}
 //       <div className="flex-shrink-0 flex justify-between items-start pb-4">
 //         <div>
@@ -159,28 +169,7 @@
 //       </div>
 
 //       {/* Stats Cards - Moved above search */}
-//       <div className="flex-shrink-0 grid grid-cols-5 gap-3 pb-4">
-//         <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-//           <p className="text-xs text-gray-500">Total</p>
-//           <p className="text-xl font-bold text-darkSerpent">{totalCount}</p>
-//         </div>
-//         <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-//           <p className="text-xs text-gray-500">Open</p>
-//           <p className="text-xl font-bold text-saffaron">{openPositions}</p>
-//         </div>
-//         <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-//           <p className="text-xs text-gray-500">Full</p>
-//           <p className="text-xl font-bold text-darkSerpent">{fullPositions}</p>
-//         </div>
-//         <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-//           <p className="text-xs text-gray-500">Urgent</p>
-//           <p className="text-xl font-bold text-red-600">{urgentPositions}</p>
-//         </div>
-//         <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-//           <p className="text-xs text-gray-500">Archived</p>
-//           <p className="text-xl font-bold text-gray-500">{archivedCount}</p>
-//         </div>
-//       </div>
+//       <PositionsMetrics totalCount={totalCount} openPositions={openPositions} fullPositions={fullPositions} urgentPositions={urgentPositions} archivedCount={archivedCount} />
 
 //       {/* Search + Filter + Sort (Left) and New Position (Right) */}
 //       <div className="flex-shrink-0 flex gap-3 items-center pb-4 justify-between">
@@ -229,79 +218,104 @@
 //         </Button>
 //       </div>
 
-//       {/* Scrollable Cards Container */}
-//       <div className="flex-1 overflow-y-auto min-h-0">
-//         {loading ? (
-//           <div className="h-64 flex items-center justify-center">
-//             <LoadingScreen message="Loading positions..." variant="full" />
-//           </div>
-//         ) : paginatedPositions.length === 0 ? (
-//           <div className="h-64 flex flex-col items-center justify-center text-darkSerpent/30">
-//             <Search className="w-8 h-8 mb-3 opacity-30" />
-//             <p className="text-sm font-medium">No positions match your search</p>
-//           </div>
-//         ) : (
-//           <>
-//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
-//               {paginatedPositions.map((pos) => {
-//                 const isArchived = pos.is_archive;
+//       {/* Cards Container */}
+//       {loading ? (
+//         <div className="h-64 flex items-center justify-center">
+//           <LoadingScreen message="Loading positions..." variant="full" />
+//         </div>
+//       ) : paginatedPositions.length === 0 ? (
+//         <div className="h-64 flex flex-col items-center justify-center text-darkSerpent/30">
+//           <Search className="w-8 h-8 mb-3 opacity-30" />
+//           <p className="text-sm font-medium">No positions match your search</p>
+//         </div>
+//       ) : (
+//         <>
+//          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {paginatedPositions.map((pos) => {
+//             const isArchived = pos.is_archive;
 
-//                 return (
-//                   <Card 
-//                     key={pos.id} 
-//                     onClick={() => !isArchived && handleEditPosition(pos)}
-//                     className={`bg-castletonGreen/50 hover:border-saffaron/30 hover:shadow-xl group relative overflow-hidden transition-all ${isArchived ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
-//                     content={
-//                       <div className="flex flex-col h-full space-y-4">
-//                         {isArchived && (
-//                           <div className="absolute top-0 right-0 bg-gray-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-lg tracking-widest z-10">
-//                             Archived
-//                           </div>
-//                         )}
-//                         <div className="flex justify-start items-center gap-2">
+//             return (
+//               <Card 
+//                   key={pos.id} 
+//                   onClick={() => !isArchived && handleEditPosition(pos)}
+//                   className={`
+//                     relative rounded-3xl transition-all duration-500 group
+//                     border border-darkSerpent/10 hover:border-saffaron hover:shadow-md hover:-translate-y-1
+//                     ${isArchived ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+//                   `}
+//                   content={
+//                     /* REMOVED ALL PADDING HERE - Let the Card component's default p-6 handle it */
+//                     <div className="relative h-full w-full flex flex-col min-h-[160px]">
+
+//                       {/* ARCHIVE TAG: Uses negative margins to negate the parent Card's p-6 */}
+//                       {isArchived && (
+//                         <div className="absolute -top-6 -right-6 bg-gray-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl tracking-widest z-20">
+//                           Archived
+//                         </div>
+//                       )}
+
+//                       {/* Badges Row */}
+//                       <div className="flex justify-start items-center gap-2 mb-3">
 //                           {!isArchived && (
-//                             <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${getStatusStyle(pos.status)}`}>
+//                             <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${getStatusStyle(pos.status)}`}>
 //                               {pos.status}
 //                             </span>
 //                           )}
 //                           {!isArchived && pos.is_urgent && (
-//                             <span className="text-[10px] font-bold uppercase px-3 py-1 rounded-full bg-red-100 text-red-600 border border-red-200">
+//                             <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200">
 //                               🔴 Urgent
 //                             </span>
 //                           )}
-//                         </div>
-//                         <div className="flex-1 space-y-4">
-//                           <h3 className={`font-bold text-lg transition-colors ${isArchived ? 'text-gray-500' : 'text-darkSerpent group-hover:text-castletonGreen'}`}>
-//                             {pos.title}
-//                           </h3>
-//                           <div className="bg-seaSalt p-4 rounded-xl border border-gray-100">
-//                             <p className={`text-sm line-clamp-2 ${isArchived ? 'text-gray-400' : 'text-gray-700'}`}>
-//                               {pos.description}
-//                             </p>
-//                           </div>
-//                         </div>
-//                         <div className="pt-4 mt-auto border-t border-gray-100 flex justify-end">
-//                           <button 
-//                             onClick={(e) => {
-//                               e.stopPropagation();
-//                               confirmArchiveRestore(pos.id, pos.title, pos.is_archive);
-//                             }}
-//                             className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer ${
-//                               isArchived ? 'text-castletonGreen hover:text-darkSerpent' : 'text-gray-400 hover:text-red-600'
-//                             }`}
-//                           >
-//                             {isArchived ? <><RotateCcw size={14} /> Restore</> : <><Archive size={14} /> Archive</>}
-//                           </button>
+//                       </div>
+                      
+//                       {/* Title & Description Area */}
+//                       <div className="flex-1 space-y-2">
+//                         <h3 className="font-bold uppercase tracking-wider text-sm text-darkSerpent">
+//                           {pos.title}
+//                         </h3>
+//                         <div className="p-3 rounded-xl border border-darkSerpent/5 bg-castletonGreen/5">
+//                           <p className="text-xs italic line-clamp-2 text-gray-600">
+//                             {pos.description}
+//                           </p>
 //                         </div>
 //                       </div>
-//                     }
-//                   />
-//                 );
-//               })}
-//             </div>
+
+//                       {/* Footer Section */}
+//                       <div className="pt-3 mt-4 relative flex justify-end">
+//                           {/* THE ANIMATED PROGRESS DIVIDER - No more negative margins */}
+//                           <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gray-100">
+//                             <div 
+//                               className="h-full w-0 transition-all duration-700 ease-in-out group-hover:w-full bg-saffaron" 
+//                             />
+//                           </div>
+
+//                           <button 
+//                             onClick={(e) => { 
+//                               e.stopPropagation(); 
+//                               confirmArchiveRestore(pos.id, pos.title, pos.is_archive); 
+//                             }}
+//                             className={`
+//                               pt-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer
+//                               ${isArchived 
+//                                 ? 'text-castletonGreen hover:text-castletonGreen/80' 
+//                                 : 'text-gray-400 hover:text-red-600'
+//                               }
+//                             `}
+//                           >
+//                             <span>
+//                               {isArchived ? <RotateCcw size={14} /> : <Archive size={14} />}
+//                             </span>
+//                             {isArchived ? 'Restore' : 'Archive'}
+//                           </button>
+//                         </div>
+//                     </div>
+//                   }
+//                 />
+//               );
+//             })}
+//           </div>
 //           </>
 //         )}
-//       </div>
 
 //       {/* Pagination */}
 //       <Pagination
@@ -396,6 +410,7 @@ import { showSuccessToast, showErrorToast } from '../../components/Toast';
 import InputField from "../../components/InputField";
 import ComboBox from "../../components/ComboBox";
 import Pagination from "../../components/Pagination";
+import PositionsMetrics from "./Metric";
 
 export default function Position() {
   const [showForm, setShowForm] = useState(false);
@@ -546,43 +561,22 @@ export default function Position() {
       {/* Header */}
       <div className="flex-shrink-0 flex justify-between items-start pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-darkSerpent">Manage Positions</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-darkSerpent">Manage Positions</h2>
           <p className="text-gray-600 text-xs mt-1">Create and manage job openings</p>
         </div>
       </div>
 
       {/* Stats Cards - Moved above search */}
-      <div className="flex-shrink-0 grid grid-cols-5 gap-3 pb-4">
-        <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-          <p className="text-xs text-gray-500">Total</p>
-          <p className="text-xl font-bold text-darkSerpent">{totalCount}</p>
-        </div>
-        <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-          <p className="text-xs text-gray-500">Open</p>
-          <p className="text-xl font-bold text-saffaron">{openPositions}</p>
-        </div>
-        <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-          <p className="text-xs text-gray-500">Full</p>
-          <p className="text-xl font-bold text-darkSerpent">{fullPositions}</p>
-        </div>
-        <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-          <p className="text-xs text-gray-500">Urgent</p>
-          <p className="text-xl font-bold text-red-600">{urgentPositions}</p>
-        </div>
-        <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-          <p className="text-xs text-gray-500">Archived</p>
-          <p className="text-xl font-bold text-gray-500">{archivedCount}</p>
-        </div>
-      </div>
+      <PositionsMetrics totalCount={totalCount} openPositions={openPositions} fullPositions={fullPositions} urgentPositions={urgentPositions} archivedCount={archivedCount} />
 
       {/* Search + Filter + Sort (Left) and New Position (Right) */}
-      <div className="flex-shrink-0 flex gap-3 items-center pb-4 justify-between">
+      <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center pb-4 justify-between">
         
         {/* Left Side: Search (Expands), Filter, Sort */}
-        <div className="flex gap-3 items-center flex-grow">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-grow">
           
           {/* Search container */}
-          <div className="relative flex-grow max-w-lg"> 
+          <div className="relative flex-grow sm:max-w-lg"> 
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-darkSerpent/30" />
             <InputField
               type="text"
@@ -594,7 +588,7 @@ export default function Position() {
           </div>
 
           {/* Filter ComboBox */}
-          <div className="w-36 shrink-0">
+          <div className="w-full sm:w-36 shrink-0">
             <ComboBox
               value={filterStatus}
               onChange={(val) => setFilterStatus(val as any)}
@@ -603,7 +597,7 @@ export default function Position() {
           </div>
 
           {/* Sort ComboBox */}
-          <div className="w-36 shrink-0">
+          <div className="w-full sm:w-36 shrink-0">
             <ComboBox
               value={sortBy}
               onChange={(val) => setSortBy(val as any)}
@@ -617,7 +611,7 @@ export default function Position() {
         </div>
 
         {/* Right Side: New Position Button */}
-        <Button className="rounded-xl text-xs shadow-md whitespace-nowrap shrink-0" onClick={handleAddPosition}>
+        <Button className="rounded-xl text-xs shadow-md whitespace-nowrap shrink-0 w-full sm:w-auto justify-center" onClick={handleAddPosition}>
           <PlusCircle size={18} /> New Position
         </Button>
       </div>
@@ -634,7 +628,7 @@ export default function Position() {
         </div>
       ) : (
         <>
-         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedPositions.map((pos) => {
             const isArchived = pos.is_archive;
 
@@ -643,56 +637,66 @@ export default function Position() {
                   key={pos.id} 
                   onClick={() => !isArchived && handleEditPosition(pos)}
                   className={`
-                    relative rounded-3xl p-[2px] transition-all duration-500 group
-                    hover:shadow-md hover:-translate-y-1
+                    relative rounded-3xl transition-all duration-500 group
+                    border border-darkSerpent/10 hover:border-saffaron hover:shadow-md hover:-translate-y-1
                     ${isArchived ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
                   `}
                   content={
-                    <div className="relative h-full w-full rounded-[22px] bg-white p-6 flex flex-col space-y-4 overflow-hidden">
+                    /* REMOVED ALL PADDING HERE - Let the Card component's default p-6 handle it */
+                    <div className="relative h-full w-full flex flex-col min-h-[160px]">
 
-                      {/* Main Content */}
-                      <div className="relative z-10 flex flex-col h-full space-y-4 bg-white">
-                        {isArchived && (
-                          <div className="absolute -top-6 -right-6 bg-gray-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-lg tracking-widest z-10">
-                            Archived
-                          </div>
-                        )}
-
-                        <div className="flex justify-start items-center gap-2">
-                            {!isArchived && (
-                              <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${getStatusStyle(pos.status)}`}>
-                                {pos.status}
-                              </span>
-                            )}
-                            {!isArchived && pos.is_urgent && (
-                              <span className="text-[10px] font-bold uppercase px-3 py-1 rounded-full bg-red-100 text-red-600 border border-red-200">
-                                🔴 Urgent
-                              </span>
-                            )}
+                      {/* ARCHIVE TAG: Uses negative margins to negate the parent Card's p-6 */}
+                      {isArchived && (
+                        <div className="absolute -top-6 -right-6 bg-gray-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl tracking-widest z-20">
+                          Archived
                         </div>
-                        
-                        <div className="flex-1 space-y-4">
-                          <h3 className="font-bold uppercase tracking-[0.13em] text-md text-darkSerpent">
-                            {pos.title}
-                          </h3>
-                          <div className="p-4 rounded-xl border border-darkSerpent/10 bg-castletonGreen/10">
-                            <p className="text-xs italic line-clamp-2 text-gray-700">
-                              {pos.description}
-                            </p>
-                          </div>
-                        </div>
+                      )}
 
-                        <div className="pt-4 mt-auto border-t border-gray-100 flex justify-end">
+                      {/* Badges Row */}
+                      <div className="flex justify-start items-center gap-2 mb-3 flex-wrap">
+                          {!isArchived && (
+                            <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${getStatusStyle(pos.status)}`}>
+                              {pos.status}
+                            </span>
+                          )}
+                          {!isArchived && pos.is_urgent && (
+                            <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200">
+                              🔴 Urgent
+                            </span>
+                          )}
+                      </div>
+                      
+                      {/* Title & Description Area */}
+                      <div className="flex-1 space-y-2">
+                        <h3 className="font-bold uppercase tracking-wider text-sm text-darkSerpent break-words">
+                          {pos.title}
+                        </h3>
+                        <div className="p-3 rounded-xl border border-darkSerpent/5 bg-castletonGreen/5">
+                          <p className="text-xs italic line-clamp-2 text-gray-600 break-words">
+                            {pos.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Footer Section */}
+                      <div className="pt-3 mt-4 relative flex justify-end">
+                          {/* THE ANIMATED PROGRESS DIVIDER - No more negative margins */}
+                          <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gray-100">
+                            <div 
+                              className="h-full w-0 transition-all duration-700 ease-in-out group-hover:w-full bg-saffaron" 
+                            />
+                          </div>
+
                           <button 
                             onClick={(e) => { 
                               e.stopPropagation(); 
                               confirmArchiveRestore(pos.id, pos.title, pos.is_archive); 
                             }}
                             className={`
-                              text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer
+                              pt-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer
                               ${isArchived 
-                                ? 'text-castletonGreen hover:text-castletonGreen/80' // Green for Restore
-                                : 'text-gray-400 hover:text-red-600'                // Red for Archive
+                                ? 'text-castletonGreen hover:text-castletonGreen/80' 
+                                : 'text-gray-400 hover:text-red-600'
                               }
                             `}
                           >
@@ -702,7 +706,6 @@ export default function Position() {
                             {isArchived ? 'Restore' : 'Archive'}
                           </button>
                         </div>
-                      </div>
                     </div>
                   }
                 />
@@ -741,7 +744,7 @@ export default function Position() {
               animate={{ x: 0 }} 
               exit={{ x: '100%' }} 
               transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
-              className="fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-50 flex flex-col"
+              className="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-2xl z-50 flex flex-col"
             >
               <div className="flex items-center justify-between p-6 border-b border-seaSalt">
                 <h3 className="text-xl font-bold text-darkSerpent">
