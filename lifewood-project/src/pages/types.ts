@@ -81,3 +81,56 @@ export type ApplicationDetails={
     datetime: string;
   }>;
 }
+
+export type DashboardStats = {
+  totalApplications: number;
+  totalHired: number;
+  activePositions: number;
+  totalApplicants: number;
+  pendingReviews: number;
+  shortlisted: number;
+  notSelected: number;
+  declined: number;
+  withdrawn: number;
+  urgentPositions: number;
+  avgTimeToHire: number;
+  conversionRate: number;
+  monthlyGrowth: number;
+}
+
+export type RecentActivity = {
+  id: string;
+  type: 'application' | 'status_change' | 'new_position';
+  title: string;
+  description: string;
+  timestamp: string;
+  applicantName?: string;
+  positionTitle?: string;
+  status?: string;
+}
+
+export type WeeklyTrend = {
+  day: string;
+  applications: number;
+  hired: number;
+  shortlisted: number;
+}
+
+export type TopPosition = {
+  title: string;
+  applications: number;
+  hired: number;
+  fillRate: number;
+}
+
+export type StatusDistribution = {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export type MonthlyData = {
+  month: string;
+  applications: number;
+  hired: number;
+}

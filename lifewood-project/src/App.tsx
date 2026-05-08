@@ -10,7 +10,7 @@ import Navbar from './components/Navbar';
 import Contact from './pages/Contact';
 import Services from './pages/Services';
 import LoginPage from './pages/login/Login';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/dashboard/Dashboard';
 import Footer from './components/Footer';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import CookiePolicy from './pages/legal/CookiePolicy';

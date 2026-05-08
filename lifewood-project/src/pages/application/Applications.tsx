@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Briefcase, Search, ChevronUp, ChevronDown, ChevronsUpDown, Filter, SlidersHorizontal } from 'lucide-react';
+import { Briefcase, Search, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { formatDateTime } from '../../helpers/datetime';
 import { fetchAllApplications } from './applicationServices';
 import type { ApplicationDetails } from '../types';
@@ -100,14 +100,14 @@ export default function Applications() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
 
   const SortIcon = ({ col }: { col: SortKey }) => {
-    if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 opacity-25 ml-1" />;
+    if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 opacity-25 ml-1 shrink-0" />;
     return sortDir === 'asc'
-      ? <ChevronUp className="w-3 h-3 text-saffaron ml-1" />
-      : <ChevronDown className="w-3 h-3 text-saffaron ml-1" />;
+      ? <ChevronUp className="w-3 h-3 text-saffaron ml-1 shrink-0" />
+      : <ChevronDown className="w-3 h-3 text-saffaron ml-1 shrink-0" />;
   };
 
   const ThBtn = ({ col, label, idx }: { col: SortKey; label: string; idx: number }) => (
-    <th className={`px-5 py-3.5 ${colWidths[idx]}`}>
+    <th className={`px-3 sm:px-5 py-3.5 ${colWidths[idx]}`}>
       <button
         onClick={() => handleSort(col)}
         className="flex items-center text-[11px] uppercase tracking-widest font-bold text-castletonGreen hover:text-darkSerpent transition-colors cursor-pointer whitespace-nowrap"
@@ -120,159 +120,173 @@ export default function Applications() {
   const colWidths = ['w-[14%]', 'w-[22%]', 'w-[22%]', 'w-[20%]', 'w-[22%]'];
 
   return (
-  <div className="flex flex-col h-full">
-    {/* Header */}
-   <div className="flex-shrink-0 flex items-start justify-between pb-6">
-      <div>
-        <h2 className="text-2xl font-bold text-darkSerpent">Applications</h2>
-        <p className="text-gray-500 text-xs mt-1">Review, track, and manage all incoming job applications</p>
-      </div>
-    </div>
-
-    {/* ADD THE METRICS HERE */}
-    <ApplicationMetrics applications={applications} />
-
-    {/* Search + Filters Container */}
-    <div className="flex-shrink-0 flex gap-3 items-center justify-start py-4">
-      
-      {/* Search Bar - Defined width to prevent stretching */}
-      <div className="relative flex-grow sm:max-w-lg"> 
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-darkSerpent/30" />
-        <InputField
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-white border border-darkSerpent/10 rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/40 transition-all text-darkSerpent"
-        />
-      </div>
-      {/* Status Filter - Clean ComboBox */}
-      <div className="w-44">
-        <ComboBox
-          value={statusFilter}
-          onChange={(val) => setStatusFilter(val as any)}
-          options={STATUS_OPTIONS.map(s => ({ 
-            label: s, 
-            value: s 
-          }))}
-        />
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-start justify-between pb-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-darkSerpent">Applications</h2>
+          <p className="text-gray-500 text-xs mt-1">Review, track, and manage all incoming job applications</p>
+        </div>
       </div>
 
-      {/* Position Filter - Clean ComboBox */}
-      <div className="w-52">
-        <ComboBox
-          value={positionFilter}
-          onChange={(val) => { setPositionFilter(val as any); setCurrentPage(1); }}
-          options={positions.map(p => ({ 
-            label: p, 
-            value: p 
-          }))}
-        />
-      </div>
-    </div>
+      {/* Metrics */}
+      <ApplicationMetrics applications={applications} />
 
-    {/* Main Table Container */}
-    <div className="flex-1 bg-white rounded-2xl border border-seaSalt shadow-sm flex flex-col overflow-hidden">
-      
-      {/* Editorial Header with Sorting */}
-      <div className="flex-shrink-0 bg-castletonGreen/[0.04] border-b border-castletonGreen/10">
-        <table className="w-full table-fixed">
-          <thead>
-            <tr>
-              <ThBtn col="applicationId" label="Application No." idx={0} />
-              <ThBtn col="name" label="Applicant" idx={1} />
-              <ThBtn col="position" label="Position" idx={2} />
-              <ThBtn col="dateSubmitted" label="Submitted" idx={3} />
-              <ThBtn col="status" label="Status" idx={4} />
-            </tr>
-          </thead>
-        </table>
-      </div>
-
-      {/* Scrollable Table Body */}
-      <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="h-full flex items-center justify-center">
-            <LoadingScreen message="Loading..." variant="full" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-darkSerpent/30">
-            <Briefcase className="w-10 h-10 mb-3 opacity-20" />
-            <p className="text-sm font-medium">No applications found</p>
-          </div>
-        ) : (
-          <table className="w-full table-fixed">
-            <tbody className="divide-y divide-seaSalt/30">
-              {paginatedData.map((app) => (
-                <motion.tr
-                  key={app.applicationId}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={() => setSelectedApplication(app)}
-                  className="hover:bg-saffaron/7 transition-colors cursor-pointer group"
-                >
-                  <td className={`px-6 py-5 ${colWidths[0]}`}>
-                    <span className="text-[11px] font-bold text-castletonGreen/50">{app.applicationId}</span>
-                  </td>
-                  <td className={`px-6 py-5 ${colWidths[1]}`}>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-bold text-darkSerpent group-hover:text-saffaron transition-colors truncate">
-                        {app.applicant.firstname} {app.applicant.lastname}
-                      </span>
-                      <span className="text-[11px] text-darkSerpent/40 truncate">{app.applicant.email}</span>
-                    </div>
-                  </td>
-                  <td className={`px-6 py-5 ${colWidths[2]}`}>
-                    <span className="text-[13px] text-darkSerpent/70 truncate block font-medium">{app.position.title}</span>
-                  </td>
-                  <td className={`px-6 py-5 ${colWidths[3]}`}>
-                    <span className="text-[12px] text-darkSerpent/50">{formatDateTime(app.dateSubmitted)}</span>
-                  </td>
-                  <td className={`px-6 py-5 ${colWidths[4]}`}>
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${getStatusStyle(app.status)}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${app.status === 'hired' ? 'bg-castletonGreen' : 'bg-current'}`} />
-                      {getStatusLabel(app.status)}
-                    </span>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* Footer: Pagination Only */}
-      <div className="flex-shrink-0 p-4 border-t border-seaSalt flex items-center justify-between bg-white">
-        <div className="flex items-center gap-3 text-[11px] font-bold text-darkSerpent/50">
-          <span>Showing</span>
-          <select 
-            value={itemsPerPage} 
-            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-            className="bg-seaSalt/50 border border-seaSalt rounded-lg px-2 py-1 outline-none text-darkSerpent cursor-pointer focus:ring-1 ring-saffaron"
-          >
-            {[5, 10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
-          <span>per page</span>
+      {/* Search + Filters Container - Always visible */}
+      <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-start py-4">
+        {/* Search Bar */}
+        <div className="relative flex-grow sm:max-w-lg"> 
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-darkSerpent/30" />
+          <InputField
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-darkSerpent/10 rounded-xl text-sm outline-none focus:ring-2 ring-saffaron/40 transition-all text-darkSerpent"
+          />
         </div>
         
-        <div className="flex items-center gap-1">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-darkSerpent/60 hover:bg-seaSalt/50 disabled:opacity-30 transition-all">Prev</button>
-          <span className="text-[11px] font-mono font-bold text-darkSerpent/30 px-2">{currentPage} / {totalPages}</span>
-          <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-darkSerpent/60 hover:bg-seaSalt/50 disabled:opacity-30 transition-all">Next</button>
+        {/* Status Filter */}
+        <div className="w-full sm:w-44">
+          <ComboBox
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val as any)}
+            options={STATUS_OPTIONS.map(s => ({ label: s, value: s }))}
+          />
+        </div>
+
+        {/* Position Filter */}
+        <div className="w-full sm:w-52">
+          <ComboBox
+            value={positionFilter}
+            onChange={(val) => { setPositionFilter(val as any); setCurrentPage(1); }}
+            options={positions.map(p => ({ label: p, value: p }))}
+          />
         </div>
       </div>
-    </div>
 
-    <AnimatePresence>
-      {selectedApplication && (
-        <ApplicationsView
-          application={selectedApplication}
-          onClose={() => setSelectedApplication(null)}
-          onStatusUpdate={loadApplications}
-        />
+      {/* Table Container - Hide everything when loading */}
+      {loading ? (
+      <div className="h-64 flex items-center justify-center">
+          <LoadingScreen message="Loading applications..." variant="full" />
+        </div>
+      ) : (
+        <div className="flex-1 bg-white rounded-2xl border border-seaSalt shadow-sm flex flex-col overflow-hidden">
+          {/* Editorial Header with Sorting */}
+          <div className="flex-shrink-0 bg-castletonGreen/[0.04] border-b border-castletonGreen/10 overflow-x-auto">
+            <table className="w-full table-fixed min-w-[640px] sm:min-w-full">
+              <thead>
+                <tr>
+                  <ThBtn col="applicationId" label="App No." idx={0} />
+                  <ThBtn col="name" label="Applicant" idx={1} />
+                  <ThBtn col="position" label="Position" idx={2} />
+                  <ThBtn col="dateSubmitted" label="Submitted" idx={3} />
+                  <ThBtn col="status" label="Status" idx={4} />
+                </tr>
+              </thead>
+            </table>
+          </div>
+
+          {/* Scrollable Table Body */}
+          <div className="flex-1 overflow-y-auto overflow-x-auto">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-darkSerpent/30">
+                <Briefcase className="w-10 h-10 mb-3 opacity-20" />
+                <p className="text-sm font-medium">No applications found</p>
+              </div>
+            ) : (
+              <table className="w-full table-fixed min-w-[640px] sm:min-w-full">
+                <tbody className="divide-y divide-seaSalt/30">
+                  {paginatedData.map((app) => (
+                    <motion.tr
+                      key={app.applicationId}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={() => setSelectedApplication(app)}
+                      className="hover:bg-saffaron/7 transition-colors cursor-pointer group"
+                    >
+                      <td className={`px-3 sm:px-6 py-4 sm:py-5 ${colWidths[0]}`}>
+                        <span className="text-[10px] sm:text-[11px] font-bold text-castletonGreen/50 break-words">
+                          {app.applicationId}
+                        </span>
+                      </td>
+                      <td className={`px-3 sm:px-6 py-4 sm:py-5 ${colWidths[1]}`}>
+                        <div className="flex flex-col">
+                          <span className="text-[12px] sm:text-[13px] font-bold text-darkSerpent group-hover:text-saffaron transition-colors truncate">
+                            {app.applicant.firstname} {app.applicant.lastname}
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] text-darkSerpent/40 truncate hidden sm:block">
+                            {app.applicant.email}
+                          </span>
+                        </div>
+                      </td>
+                      <td className={`px-3 sm:px-6 py-4 sm:py-5 ${colWidths[2]}`}>
+                        <span className="text-[12px] sm:text-[13px] text-darkSerpent/70 truncate block font-medium">
+                          {app.position.title}
+                        </span>
+                      </td>
+                      <td className={`px-3 sm:px-6 py-4 sm:py-5 ${colWidths[3]}`}>
+                        <span className="text-[11px] sm:text-[12px] text-darkSerpent/50 whitespace-nowrap sm:whitespace-normal">
+                          {formatDateTime(app.dateSubmitted)}
+                        </span>
+                      </td>
+                      <td className={`px-3 sm:px-6 py-4 sm:py-5 ${colWidths[4]}`}>
+                        <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${getStatusStyle(app.status)}`}>
+                          <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full mr-1 sm:mr-2 ${app.status === 'hired' ? 'bg-castletonGreen' : 'bg-current'}`} />
+                          <span className="whitespace-nowrap">{getStatusLabel(app.status)}</span>
+                        </span>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Footer: Pagination */}
+          <div className="flex-shrink-0 p-4 border-t border-seaSalt flex flex-col sm:flex-row items-center gap-3 sm:gap-0 justify-between bg-white">
+            <div className="flex items-center gap-3 text-[11px] font-bold text-darkSerpent/50">
+              <span>Showing</span>
+              <select 
+                value={itemsPerPage} 
+                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="bg-seaSalt/50 border border-seaSalt rounded-lg px-2 py-1 outline-none text-darkSerpent cursor-pointer focus:ring-1 ring-saffaron text-[11px]"
+              >
+                {[5, 10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <span>per page</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <button 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)} 
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold text-darkSerpent/60 hover:bg-seaSalt/50 disabled:opacity-30 transition-all ${currentPage !== 1 ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+              >
+                Prev
+              </button>
+              <span className="text-[11px] font-mono font-bold text-darkSerpent/30 px-2">{currentPage} / {totalPages}</span>
+              <button 
+                disabled={currentPage >= totalPages} 
+                onClick={() => setCurrentPage(p => p + 1)} 
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold text-darkSerpent/60 hover:bg-seaSalt/50 disabled:opacity-30 transition-all ${currentPage < totalPages ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
-  </div>
-);
-}
 
+      <AnimatePresence>
+        {selectedApplication && (
+          <ApplicationsView
+            application={selectedApplication}
+            onClose={() => setSelectedApplication(null)}
+            onStatusUpdate={loadApplications}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+} 

@@ -1,98 +1,3 @@
-// import { motion } from 'framer-motion';
-// import { 
-//   Layers, UserCheck, Clock, CheckCircle2, 
-//   XCircle, Ban, ArrowLeftCircle, HelpCircle 
-// } from 'lucide-react';
-// import type { ApplicationDetails } from '../types';
-
-// interface MetricProps {
-//   applications: ApplicationDetails[];
-// }
-
-// export default function ApplicationMetrics({ applications }: MetricProps) {
-//   // 1. Helper to map icons to statuses
-//   const getStatusIcon = (status: string) => {
-//     switch (status.toLowerCase()) {
-//       case 'all': return <Layers size={20} />;
-//       case 'pending': return <Clock size={20} />;
-//       case 'shortlisted': return <UserCheck size={20} />;
-//       case 'hired': return <CheckCircle2 size={20} />;
-//       case 'not selected': return <XCircle size={20} />;
-//       case 'declined': return <Ban size={20} />;
-//       case 'withdrawn': return <ArrowLeftCircle size={20} />;
-//       default: return <HelpCircle size={20} />;
-//     }
-//   };
-
-//   // 2. Generate metrics based on your STATUS_OPTIONS array
-//   const statusOptions = ['All', 'Pending', 'Shortlisted', 'Hired', 'Not Selected', 'Declined', 'Withdrawn'];
-  
-//   const stats = statusOptions.map((status) => {
-//     const count = status === 'All' 
-//       ? applications.length 
-//       : applications.filter(a => (a.status || 'Pending').toLowerCase() === status.toLowerCase()).length;
-
-//     return {
-//       label: status === 'All' ? 'Total Applications' : status,
-//       value: count,
-//       icon: getStatusIcon(status),
-//       // Alternate colors: Even = DarkSerpent, Odd = Saffaron
-//     };
-//   });
-
-//   return (
-//     <div className="flex-shrink-0 w-full overflow-x-auto no-scrollbar pb-4">
-//       <div className="flex gap-4 min-w-max pr-4">
-//         {stats.map((stat, i) => (
-//           <motion.div
-//             key={stat.label}
-//             initial={{ opacity: 0, scale: 0.95 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             transition={{ delay: i * 0.03 }}
-//             className="group relative bg-white border border-darkSerpent/10 rounded-2xl p-4 w-56 cursor-default overflow-hidden transition-all duration-500 flex-shrink-0"
-//           >
-//             {/* THE HOVER EFFECT: Geometric accent */}
-//             <div 
-//               className="absolute top-0 right-0 w-16 h-16 bg-darkSerpent/[0.03] rounded-bl-[60px] 
-//                          translate-x-8 -translate-y-8 group-hover:translate-x-3 group-hover:-translate-y-3 
-//                          transition-transform duration-500 ease-out" 
-//             />
-
-//             <div className="relative z-10 flex items-center gap-4">
-//               {/* ICON CONTAINER: Strict Palette */}
-//               <div className="relative flex-shrink-0 w-10 h-10">
-//                 <div className="absolute inset-0 rounded-xl bg-darkSerpent opacity-0 group-hover:animate-ping group-hover:opacity-10" />
-//                 <div 
-//                   className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-darkSerpent shadow-lg z-10 transition-transform duration-300 group-hover:-rotate-6 text-saffaron"
-//                 >
-//                   {stat.icon}
-//                 </div>
-//               </div>
-
-//               {/* CONTENT */}
-//               <div className="flex flex-col min-w-0">
-//                 <span className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-400 group-hover:text-darkSerpent/60 transition-colors truncate">
-//                   {stat.label}
-//                 </span>
-//                 <span className="text-xl font-black text-darkSerpent tracking-tight">
-//                   {stat.value}
-//                 </span>
-//               </div>
-//             </div>
-
-//             {/* SEASALT CONTRAST DOT */}
-//             <div 
-//               className={`absolute bottom-3 left-4 w-1 h-1 rounded-full group-hover:scale-[2.5] transition-all duration-500 ${
-//                 i % 2 === 0 ? 'bg-saffaron' : 'bg-darkSerpent/20'
-//               }`}
-//             />
-//           </motion.div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -111,7 +16,6 @@ export default function ApplicationMetrics({ applications }: MetricProps) {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
-  // 1. Scroll logic
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
@@ -123,7 +27,6 @@ export default function ApplicationMetrics({ applications }: MetricProps) {
     }
   };
 
-  // 2. Check if arrows should be visible based on scroll position
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
@@ -137,7 +40,7 @@ export default function ApplicationMetrics({ applications }: MetricProps) {
     if (el) {
       el.addEventListener('scroll', checkScroll);
       window.addEventListener('resize', checkScroll);
-      checkScroll(); // Initial check
+      checkScroll();
     }
     return () => {
       el?.removeEventListener('scroll', checkScroll);
@@ -208,21 +111,33 @@ export default function ApplicationMetrics({ applications }: MetricProps) {
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.03 }}
-            className="group relative bg-white border border-darkSerpent/10 rounded-2xl p-4 w-56 cursor-default overflow-hidden transition-all duration-500 flex-shrink-0"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.4 }}
+            className="group relative bg-white border border-darkSerpent/10 rounded-2xl p-4 w-56 cursor-default overflow-hidden transition-all duration-500 flex-shrink-0 hover:shadow-lg hover:border-saffaron/20"
           >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-darkSerpent/[0.03] rounded-bl-[60px] translate-x-8 -translate-y-8 group-hover:translate-x-3 group-hover:-translate-y-3 transition-transform duration-500 ease-out" />
+            {/* THE HOVER EFFECT: DarkSerpent geometric accent that slides in from the top-right corner */}
+            <div 
+              className="absolute top-0 right-0 w-24 h-24 bg-darkSerpent/[0.03] rounded-bl-[100px] 
+                         translate-x-12 -translate-y-12 group-hover:translate-x-4 group-hover:-translate-y-4 
+                         transition-transform duration-500 ease-out" 
+            />
+            
+            {/* A crisp vertical DarkSerpent line that "grows" on the right side on hover */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[2px] h-0 bg-darkSerpent/20 group-hover:h-1/2 transition-all duration-500" />
 
             <div className="relative z-10 flex items-center gap-4">
+              {/* ICON CONTAINER: DarkSerpent Box + Saffaron Icon */}
               <div className="relative flex-shrink-0 w-10 h-10">
+                {/* The "Pulse" Ring - only visible on hover */}
                 <div className="absolute inset-0 rounded-xl bg-darkSerpent opacity-0 group-hover:animate-ping group-hover:opacity-10" />
-                <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-darkSerpent shadow-lg z-10 transition-transform duration-300 group-hover:-rotate-6 text-saffaron">
+                
+                <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-darkSerpent text-saffaron shadow-lg z-10 transition-transform duration-300 group-hover:-rotate-6">
                   {stat.icon}
                 </div>
               </div>
 
+              {/* TEXT SECTION */}
               <div className="flex flex-col min-w-0">
                 <span className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-400 group-hover:text-darkSerpent/60 transition-colors truncate">
                   {stat.label}
@@ -233,7 +148,10 @@ export default function ApplicationMetrics({ applications }: MetricProps) {
               </div>
             </div>
 
-            <div className={`absolute bottom-3 left-4 w-1 h-1 rounded-full group-hover:scale-[2.5] transition-all duration-500 ${i % 2 === 0 ? 'bg-saffaron' : 'bg-darkSerpent/20'}`} />
+            {/* SEASALT CONTRAST: Bottom-left Saffaron "Dot" that turns into a small glow on hover */}
+            <div 
+              className="absolute bottom-3 left-4 w-1 h-1 rounded-full bg-darkSerpent/20 group-hover:bg-saffaron group-hover:scale-[2] transition-all duration-300" 
+            />
           </motion.div>
         ))}
       </div>

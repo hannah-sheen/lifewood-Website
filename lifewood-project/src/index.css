@@ -12,6 +12,10 @@
   --color-pastelGreen: #708E7C;
   --color-saffaron: #FFB347;
   --color-earthYellow: #FFC370;
+  --color-darkYellow: #C17110;
+  --color-darkGray: #666666;
+  --color-ashGray: #999999;
+  --color-lightGray: #CCCCCC;
 }
 
 body {

@@ -163,7 +163,7 @@ export default function Position() {
       {/* Header */}
       <div className="flex-shrink-0 flex justify-between items-start pb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-darkSerpent">Manage Positions</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-darkSerpent">Positions</h2>
           <p className="text-gray-600 text-xs mt-1">Create and manage job openings</p>
         </div>
       </div>
@@ -229,8 +229,7 @@ export default function Position() {
           <p className="text-sm font-medium">No positions match your search</p>
         </div>
       ) : (
-        <>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedPositions.map((pos) => {
             const isArchived = pos.is_archive;
 
@@ -314,19 +313,20 @@ export default function Position() {
               );
             })}
           </div>
-          </>
-        )}
+      )}
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={setItemsPerPage}
-        showItemsPerPage={true}
-        itemsPerPageOptions={[6, 9, 12, 18, 24]}
-      />
+      {/* Pagination - Only show when not loading */}
+      {!loading && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          showItemsPerPage={true}
+          itemsPerPageOptions={[6, 9, 12, 18, 24]}
+        />
+      )}
 
       {/* Side Drawer for Form */}
       <AnimatePresence>
