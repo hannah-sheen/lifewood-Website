@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 import path from 'path';
 
 const transporter = nodemailer.createTransport({
@@ -11,12 +12,17 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Logo attachment
-const logoAttachment = {
-  filename: 'lifewood-logo.avif',
-  path: path.join(process.cwd(), 'src/assets/lifewood-paper-logo.avif'),
-  cid: 'lifewood-logo@lifewood',
-};
+// Read logo as base64
+let logoDataUrl = '';
+try {
+  const logoPath = path.join(process.cwd(), 'src/assets/lifewood-paper-logo.avif');
+  const logoBuffer = fs.readFileSync(logoPath);
+  logoDataUrl = `data:image/avif;base64,${logoBuffer.toString('base64')}`;
+  console.log('Logo loaded successfully');
+} catch (err) {
+  console.error('Logo not found, using fallback:', err.message);
+  logoDataUrl = '';
+}
 
 // Helper functions
 const label = (text) =>
@@ -25,7 +31,7 @@ const label = (text) =>
 const card = (inner, bg = '#fff', border = '#e8e2d4') =>
   `<div style="background:${bg};border-radius:12px;border:1px solid ${border};padding:24px;margin-top:20px;">${inner}</div>`;
 
-// Email wrapper with full styling
+// Email wrapper with base64 logo
 const emailWrapper = (content) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +52,12 @@ const emailWrapper = (content) => `
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="vertical-align:middle;">
-                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" height="36" style="display:block;height:36px;width:auto;" />
+                    ${logoDataUrl 
+                      ? `<img src="${logoDataUrl}" alt="Lifewood" height="36" style="display:block;height:36px;width:auto;" />`
+                      : `<div style="background:#FFB347;padding:6px 12px;border-radius:8px;display:inline-block;">
+                           <span style="color:#133020;font-weight:800;font-size:16px;">Lifewood</span>
+                         </div>`
+                    }
                   </td>
                   <td align="right" style="vertical-align:middle;">
                     <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:10px;font-weight:700;color:#708E7C;text-transform:uppercase;letter-spacing:2.5px;">Data Technology</p>
@@ -65,7 +76,7 @@ const emailWrapper = (content) => `
           <tr>
             <td style="background:#F9F7F7;padding:40px;border-left:1px solid #e8e2d4;border-right:1px solid #e8e2d4;">
               ${content}
-            </td>
+            <tr>
           </tr>
 
           <!-- Footer -->
@@ -74,7 +85,10 @@ const emailWrapper = (content) => `
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" height="22" style="display:block;height:22px;width:auto;opacity:0.5;" />
+                    ${logoDataUrl 
+                      ? `<img src="${logoDataUrl}" alt="Lifewood" height="22" style="display:block;height:22px;width:auto;opacity:0.5;" />`
+                      : `<span style="color:#708E7C;font-weight:600;">Lifewood</span>`
+                    }
                   </td>
                   <td align="right">
                     <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:11px;color:#708E7C;">© ${new Date().getFullYear()} Lifewood Data Technology</p>
@@ -141,7 +155,6 @@ export default async function handler(req, res) {
           <p style="margin:8px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#133020;line-height:1.75;">${message.replace(/\n/g, '<br>')}</p>
         `)}
       `),
-      attachments: [logoAttachment],
     });
 
     // Send confirmation email to user
@@ -161,7 +174,6 @@ export default async function handler(req, res) {
 
         <p style="margin:28px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:13px;color:#708E7C;">— The Lifewood Team</p>
       `),
-      attachments: [logoAttachment],
     });
 
     console.log(`Contact email processed for ${email}`);
