@@ -798,7 +798,7 @@ export async function sendApplicationConfirmation(
   applicationIds: string[]
 ) {
   try {
-    await fetch('http://localhost:3001/api/application-confirmation', {
+    await fetch('/api/application-confirmation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ applicantName, applicantEmail, positions, applicationIds }),
@@ -985,7 +985,7 @@ export async function sendStatusUpdateEmail(
   message: string
 ) {
   try {
-    await fetch('http://localhost:3001/api/status-update', {
+    await fetch('/api/status-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ applicantName, applicantEmail, applicationId, position, newStatus, message }),
