@@ -85,7 +85,7 @@ const emailWrapper = (content) => `
           </tr>
 
         </table>
-      </table>
+      </tr>
     </tr>
   </table>
 </body>
@@ -93,81 +93,71 @@ const emailWrapper = (content) => `
 `;
 
 export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, message } = req.body;
+  const { applicantName, applicantEmail, positions, applicationIds } = req.body;
 
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'All fields are required.' });
+  if (!applicantEmail || !applicantName) {
+    return res.status(400).json({ error: 'Missing required fields.' });
   }
 
   try {
-    // Send email to admin
     await transporter.sendMail({
-      from: `"${name}" <${email}>`,
-      to: process.env.MAIL_USER,
-      subject: `New Contact Message from ${name}`,
-      replyTo: email,
+      from: process.env.MAIL_FROM,
+      to: applicantEmail,
+      subject: `Application Received — Lifewood Data Technology`,
       html: emailWrapper(`
-        <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFB347;text-transform:uppercase;letter-spacing:2px;">Incoming Message</p>
-        <h2 style="margin:0 0 6px;font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;color:#133020;letter-spacing:-0.5px;">New Contact Message</h2>
-        <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#708E7C;">Someone reached out via the Lifewood website.</p>
+        <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFB347;text-transform:uppercase;letter-spacing:2px;">Application Submitted</p>
+        <h2 style="margin:0 0 6px;font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;color:#133020;letter-spacing:-0.5px;">Hi ${applicantName},</h2>
+        <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#708E7C;line-height:1.7;">
+          Thank you for applying to Lifewood Data Technology. We've received your application${positions.length > 1 ? 's' : ''} and our team will review ${positions.length > 1 ? 'them' : 'it'} shortly.
+        </p>
+
+        ${card(`
+          ${label(`Applied Position${positions.length > 1 ? 's' : ''} — ${positions.length} ${positions.length > 1 ? 'Roles' : 'Role'}`)}
+          ${positions.map((pos, i) => `
+            <div style="padding:14px 0;${i < positions.length - 1 ? 'border-bottom:1px solid #f0ebe0;' : ''}">
+              <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:14px;font-weight:700;color:#133020;">${pos}</p>
+              <table cellpadding="0" cellspacing="0" style="margin-top:6px;">
+                <tr>
+                  <td style="padding-right:24px;">
+                    <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:11px;color:#708E7C;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Application ID</p>
+                    <p style="margin:2px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:13px;font-weight:800;color:#046241;">${applicationIds[i] || 'N/A'}</p>
+                  </td>
+                  <td>
+                    <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:11px;color:#708E7C;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Status</p>
+                    <span style="display:inline-block;margin-top:4px;padding:3px 10px;background:#f5eedb;border:1.5px solid #FFB347;border-radius:20px;font-family:'Manrope',system-ui,sans-serif;font-size:11px;font-weight:800;color:#133020;text-transform:uppercase;letter-spacing:1px;">Pending</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          `).join('')}
+        `)}
 
         ${card(`
           <table width="100%" cellpadding="0" cellspacing="0">
-            <tr><td style="padding:10px 0;border-bottom:1px solid #f0ebe0;">
-              ${label('Full Name')}
-              <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;font-weight:700;color:#133020;">${name}</p>
-            </td></tr>
-            <tr><td style="padding:10px 0;">
-              ${label('Email Address')}
-              <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;font-weight:700;color:#046241;">${email}</p>
-            </td></tr>
+            <tr>
+              <td style="width:40px;vertical-align:top;padding-top:2px;">
+                <div style="width:36px;height:36px;background:#FFB347;border-radius:10px;text-align:center;line-height:36px;font-size:18px;">🔖</div>
+              </td>
+              <td style="padding-left:14px;">
+                <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:13px;font-weight:800;color:#133020;">Keep your Application ID${applicationIds.length > 1 ? 's' : ''} safe</p>
+                <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:13px;color:#708E7C;line-height:1.6;">Use ${applicationIds.length > 1 ? 'them' : 'it'} to track your application status on our website at any time.</p>
+              </td>
+            </tr>
           </table>
-        `)}
+        `, '#f5eedb', '#e8dfc8')}
 
-        ${card(`
-          ${label('Message')}
-          <p style="margin:8px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#133020;line-height:1.75;">${message.replace(/\n/g, '<br>')}</p>
-        `)}
+        <p style="margin:28px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:13px;color:#708E7C;">— The Lifewood Recruitment Team</p>
       `),
       attachments: [logoAttachment],
     });
 
-    // Send confirmation email to user
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
-      to: email,
-      subject: `We received your message, ${name}!`,
-      html: emailWrapper(`
-        <p style="margin:0 0 4px;font-family:'Manrope',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFB347;text-transform:uppercase;letter-spacing:2px;">Message Received</p>
-        <h2 style="margin:0 0 6px;font-family:'Manrope',system-ui,sans-serif;font-size:26px;font-weight:800;color:#133020;letter-spacing:-0.5px;">Thank you, ${name}!</h2>
-        <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#708E7C;line-height:1.7;">We've received your message and will get back to you as soon as possible.</p>
-
-        ${card(`
-          ${label('Your Message')}
-          <p style="margin:8px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:14px;color:#133020;line-height:1.75;">${message.replace(/\n/g, '<br>')}</p>
-        `)}
-
-        <p style="margin:28px 0 0;font-family:'Manrope',system-ui,sans-serif;font-size:13px;color:#708E7C;">— The Lifewood Team</p>
-      `),
-      attachments: [logoAttachment],
-    });
-
-    console.log(`Contact email processed for ${email}`);
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Contact email error:', err);
-    res.status(500).json({ error: err.message || 'Failed to send email' });
+    console.error('Application confirmation email error:', err);
+    res.status(500).json({ error: 'Failed to send confirmation email.' });
   }
 }
