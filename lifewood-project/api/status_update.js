@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 const logoAttachment = {
   filename: 'lifewood-logo.avif',
-  path: path.join(process.cwd(), 'src/assets/lifewood-paper-logo.avif'),
+  path: path.join(process.cwd(), 'assets/lifewood-paper-logo.avif'),
   cid: 'lifewood-logo@lifewood',
 };
 
