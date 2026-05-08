@@ -533,19 +533,6 @@ import type {
   ApplicationWithStatus
 } from '../types';
 
-// // Helper to safely extract join data
-// function extractJoinData<T>(data: T | any[] | null): T | null {
-//   if (!data) return null;
-//   if (Array.isArray(data) && data.length > 0) {
-//     return data[0] as T;
-//   }
-//   if (!Array.isArray(data)) {
-//     return data as T;
-//   }
-//   return null;
-// }
-
-
 //======================================================================
 //                RESUME BUCKET UPLOAD
 //======================================================================
@@ -811,7 +798,7 @@ export async function sendApplicationConfirmation(
   applicationIds: string[]
 ) {
   try {
-    await fetch('/api/application-confirmation', {
+    await fetch('http://localhost:3001/api/application-confirmation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ applicantName, applicantEmail, positions, applicationIds }),
@@ -998,7 +985,7 @@ export async function sendStatusUpdateEmail(
   message: string
 ) {
   try {
-    await fetch('/api/status-update', {
+    await fetch('http://localhost:3001/api/status-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ applicantName, applicantEmail, applicationId, position, newStatus, message }),
