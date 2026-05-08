@@ -8,6 +8,7 @@ import svcVertical from '../assets/services/vertical_LLM.mp4';
 import svcAigc from '../assets/services/aigc.mp4';
 import VideoPlayer from '../components/VideoPlayer';
 import { useRef } from 'react';
+import lifewoodAIGC from '../assets/Lifewood Philippines AIGC Revolution Empowering Innovation.mp4';
 
 const SERVICES = [
   {
@@ -95,7 +96,7 @@ export default function Services() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <Animate>
-              <VideoPlayer src="/src/assets/Lifewood Philippines AIGC Revolution Empowering Innovation.mp4" />
+              <VideoPlayer src={lifewoodAIGC} />
             </Animate>
             <Animate delay={150}>
               <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Our Services</span>

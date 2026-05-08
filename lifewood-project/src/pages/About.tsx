@@ -10,6 +10,7 @@ import visionImg from '../assets/vision.jpeg';
 import missionImg from '../assets/mission.jpeg';
 import MouseTrail from '../components/MouseTrail.tsx';
 import VideoPlayer from '../components/VideoPlayer.tsx';
+import lifewoodAbout from '../assets/Lifewood Core Values and Culture.mp4'; 
 
 
 const CARDS = [
@@ -242,7 +243,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left: Video */}
             <Animate>
-              <VideoPlayer src="/src/assets/Lifewood Core Values and Culture.mp4" />
+              <VideoPlayer src={lifewoodAbout} />
             </Animate>
             {/* Right: Text */}
             <Animate delay={150}>

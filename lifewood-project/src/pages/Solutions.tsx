@@ -16,7 +16,7 @@ import nlp from "../assets/ai projects/nlp.mp4";
 import Animate from '../components/Animate.tsx';
 import { DocumentStack, AudioNode, VisionGrid, VideoLens } from '../components/AIServices.tsx';
 import VideoPlayer from '../components/VideoPlayer.tsx';
-
+import lifewoodServices from '../assets/Lifewood Services.mp4';
 
 // 1. UPDATED NAV ITEMS
 const SECTIONS = [
@@ -107,7 +107,7 @@ export default function Solutions() {
                 Empowering global enterprises with high-fidelity data engineering.
               </p>
             </Animate>
-            <Animate delay={150}><VideoPlayer src="/src/assets/Lifewood Services.mp4" /></Animate>
+            <Animate delay={150}><VideoPlayer src={lifewoodServices} /></Animate>
           </div>
         </div>
       </section>

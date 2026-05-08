@@ -13,6 +13,8 @@ import byuLogo from '../assets/byu.avif';
 import mooreLogo from '../assets/moore.avif';
 import MouseTrail from '../components/MouseTrail.tsx';
 import { motion } from 'framer-motion';
+import landingBg from '../assets/landing_bg.mp4';
+import globalReach from '../assets/global_reach.mp4';
 
 interface HomeProps {
   playVideoRef: React.MutableRefObject<(() => void) | null>;
@@ -79,7 +81,7 @@ export default function Home({ playVideoRef }: HomeProps) {
         muted // Recommended to keep true by default for autoPlay compatibility
         playsInline 
         className="absolute inset-0 w-full h-full object-cover scale-105" // slight scale to prevent edge gaps
-        src="/src/assets/landing_bg.mp4" 
+        src={landingBg} 
       />
       
       {/* BRANDED OVERLAY */}
@@ -171,7 +173,7 @@ export default function Home({ playVideoRef }: HomeProps) {
 
       {/* GLOBAL FOOTPRINT */}
       <section id="global" className="py-24 relative overflow-hidden">
-        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src="/src/assets/global_reach.mp4" />
+        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src={globalReach} />
         <div className="absolute inset-0 bg-darkSerpent/70" />
         <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
           <Animate>

@@ -8,6 +8,8 @@ import { fetchAvailablePositions } from './position/positionService.tsx';
 import type { Position } from './types';
 import Modal from '../components/Modal.tsx';
 import VideoPlayer from '../components/VideoPlayer.tsx';
+import lifewoodAIFuture from '../assets/careers/Lifewood Empowering the Future Through AI 2025.mp4';
+
 
 const SECTIONS = [
   { id: 'culture', label: 'Culture' },
@@ -100,7 +102,7 @@ export default function Careers() {
               <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8">Empower Your <br/> <span className="text-white/20 italic">Global Career.</span></h1>
               <p className="text-white/60 text-xl leading-relaxed">Lifewood is more than a tech provider—we are a social enterprise. Join a team where high-performance AI data engineering meets real-world social impact.</p>
             </Animate>
-            <Animate delay={150}><VideoPlayer src="/src/assets/careers/Lifewood Empowering the Future Through AI 2025.mp4" /></Animate>
+            <Animate delay={150}><VideoPlayer src={lifewoodAIFuture} /></Animate>
         </div>
       </section>
 
