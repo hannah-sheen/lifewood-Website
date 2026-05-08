@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
@@ -11,10 +14,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Logo attachment
+// ─── Logo CID inline attachment ───────────────────────────────────────────────
 const logoAttachment = {
   filename: 'lifewood-logo.avif',
-  path: path.join(process.cwd(), 'src/assets/lifewood-paper-logo.avif'),
+  path: path.join(__dirname, 'assets/lifewood-paper-logo.avif'),
   cid: 'lifewood-logo@lifewood',
 };
 
@@ -25,7 +28,7 @@ const label = (text) =>
 const card = (inner, bg = '#fff', border = '#e8e2d4') =>
   `<div style="background:${bg};border-radius:12px;border:1px solid ${border};padding:24px;margin-top:20px;">${inner}</div>`;
 
-// Email wrapper with full styling
+// Email wrapper with CID logo reference
 const emailWrapper = (content) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +62,7 @@ const emailWrapper = (content) => `
           <!-- Saffron accent bar -->
           <tr>
             <td style="background:#FFB347;height:3px;font-size:0;line-height:0;">&nbsp;</td>
-          </tr>
+          </td>
 
           <!-- Body -->
           <tr>
@@ -85,14 +88,21 @@ const emailWrapper = (content) => `
           </tr>
 
         </table>
-      </tr>
-    </tr>
+      </table>
+    </td>
   </table>
 </body>
 </html>
 `;
 
 export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
