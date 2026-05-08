@@ -132,8 +132,8 @@ export default function LoginPage() {
         <div className="absolute bottom-20 left-20 right-20 text-white z-20">
           <span className="text-saffaron font-bold text-xs uppercase tracking-[0.2em] mb-4 block">Secure Access</span>
           <h2 className="text-5xl font-bold leading-tight mb-6">
-            Admin Portal <br /> 
-            <span className="text-white/40 italic">Restricted Area.</span>
+            Always switched on, <br /> 
+            <span className="text-white/40 italic">never off.</span>
           </h2>
           <div className="h-1 w-20 bg-saffaron rounded-full" />
         </div>

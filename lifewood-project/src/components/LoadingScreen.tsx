@@ -149,3 +149,59 @@ export function SkeletonLoader({
     );
   }
 }
+
+export function DashboardSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header Skeleton */}
+      <div>
+        <div className="h-8 w-48 bg-lightGray/20 rounded-lg mb-2" />
+        <div className="h-3 w-64 bg-lightGray/10 rounded-lg" />
+      </div>
+
+      {/* Primary KPI Row (4 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 bg-white rounded-2xl border border-lightGray/20 shadow-sm" />
+        ))}
+      </div>
+
+      {/* Secondary KPI Row (5 Columns) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-24 bg-white rounded-2xl border border-lightGray/20 shadow-sm" />
+        ))}
+      </div>
+
+      {/* Pipeline Summary Skeleton */}
+      <div className="h-28 bg-darkSerpent/[0.03] rounded-2xl border border-lightGray/20" />
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="h-[350px] bg-white rounded-2xl border border-lightGray/20 p-6">
+           <div className="h-4 w-32 bg-seaSalt mb-6 rounded" />
+           <div className="h-full w-full bg-seaSalt/50 rounded-xl" />
+        </div>
+        <div className="h-[350px] bg-white rounded-2xl border border-lightGray/20 p-6">
+           <div className="h-4 w-32 bg-seaSalt mb-6 rounded" />
+           <div className="h-full w-full bg-seaSalt/50 rounded-xl" />
+        </div>
+      </div>
+
+      {/* Bottom Grid (Performance & Distribution) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+        <div className="p-6 bg-white rounded-2xl border border-lightGray/20">
+           <div className="h-4 w-40 bg-seaSalt mb-6 rounded" />
+           <SkeletonLoader count={5} type="avatar" />
+        </div>
+        <div className="p-6 bg-white rounded-2xl border border-lightGray/20">
+           <div className="h-4 w-40 bg-seaSalt mb-6 rounded" />
+           <div className="flex gap-6 items-center">
+             <div className="w-40 h-40 bg-seaSalt rounded-full" />
+             <div className="flex-1 space-y-4"><SkeletonLoader count={4} type="line" /></div>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+}

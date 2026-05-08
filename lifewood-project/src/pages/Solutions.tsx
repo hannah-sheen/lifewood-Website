@@ -215,7 +215,7 @@ export default function Solutions() {
             <div className="flex gap-3 items-center">
               {SOLUTIONS_DATA.map((item, i) => (
                 <Animate key={i} delay={i * 80}>
-                <button onClick={() => paginate(i)} className={`relative h-12 w-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer ${active === i ? "border-saffaron scale-110 shadow-lg z-10 opacity-100" : "border-white/5 opacity-30 grayscale hover:grayscale-0 hover:opacity-100"}`}>
+                <button onClick={() => paginate(i)} className={`relative h-12 w-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-none ${active === i ? "border-saffaron scale-110 shadow-lg z-10 opacity-100" : "border-white/5 opacity-30 grayscale hover:grayscale-0 hover:opacity-100"}`}>
                   <img src={item.image} className="w-full h-full object-cover" />
                   {active === i && <motion.div layoutId="active-nav-glow" className="absolute inset-0 bg-saffaron/10" />}
                 </button>
