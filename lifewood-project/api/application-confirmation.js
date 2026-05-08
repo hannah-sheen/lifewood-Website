@@ -41,46 +41,42 @@ const emailWrapper = (content) => `
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5eedb;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; border-collapse: separate;">
 
-          <!-- Header -->
           <tr>
-            <td style="background:#133020;border-radius:16px 16px 0 0;padding:28px 40px;">
+            <td style="background:#133020; border-radius:16px 16px 0 0; padding:32px 40px; border: 1px solid #133020;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="vertical-align:middle;">
-                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" height="36" style="display:block;height:36px;width:auto;" />
+                  <td align="left" style="vertical-align:middle;">
+                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" width="140" style="display:block; border:0; outline:none; text-decoration:none;" />
                   </td>
                   <td align="right" style="vertical-align:middle;">
-                    <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:10px;font-weight:700;color:#708E7C;text-transform:uppercase;letter-spacing:2.5px;">Data Technology</p>
+                    <p style="margin:0; font-family:'Manrope',sans-serif; font-size:10px; font-weight:700; color:#708E7C; text-transform:uppercase; letter-spacing:2px; line-height:1;">Data Technology</p>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Saffron accent bar -->
           <tr>
-            <td style="background:#FFB347;height:3px;font-size:0;line-height:0;">&nbsp;</td>
-          </td>
+            <td style="background:#FFB347; height:4px; line-height:4px; font-size:1px;">&nbsp;</td>
+          </tr>
 
-          <!-- Body -->
           <tr>
-            <td style="background:#F9F7F7;padding:40px;border-left:1px solid #e8e2d4;border-right:1px solid #e8e2d4;">
+            <td style="background:#F9F7F7; padding:40px; border-left:1px solid #e8e2d4; border-right:1px solid #e8e2d4;">
               ${content}
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
-            <td style="background:#133020;border-radius:0 0 16px 16px;padding:24px 40px;">
+            <td style="background:#133020; border-radius:0 0 16px 16px; padding:24px 40px; border: 1px solid #133020;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td>
-                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" height="22" style="display:block;height:22px;width:auto;opacity:0.5;" />
+                  <td align="left">
+                    <img src="cid:lifewood-logo@lifewood" alt="Lifewood" width="100" style="display:block; opacity:0.4;" />
                   </td>
                   <td align="right">
-                    <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:11px;color:#708E7C;">© ${new Date().getFullYear()} Lifewood Data Technology</p>
+                    <p style="margin:0; font-family:'Manrope',sans-serif; font-size:11px; color:#708E7C;">© ${new Date().getFullYear()} Lifewood Data Technology</p>
                   </td>
                 </tr>
               </table>
@@ -88,8 +84,8 @@ const emailWrapper = (content) => `
           </tr>
 
         </table>
-      </table>
-    </td>
+      </td>
+    </tr>
   </table>
 </body>
 </html>
