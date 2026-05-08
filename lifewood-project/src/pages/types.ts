@@ -1,3 +1,4 @@
+//BASIC TABLE
 export type Position={
     id: number;
     title: string;
@@ -43,6 +44,7 @@ export type ApplicationLog = {
 }
 
 
+// APPLICATION FORM
 export type ApplicationFormData = {
     fname: string;      
     lname: string;      
@@ -56,6 +58,7 @@ export type ApplicationFormData = {
     resumeFile: File | null;
 }
 
+// FETCHING APPLICATION DETAILS
 export type ApplicationDetails={
   applicationId: string;
   dateSubmitted: string;
@@ -81,6 +84,8 @@ export type ApplicationDetails={
     datetime: string;
   }>;
 }
+
+
 
 export type DashboardStats = {
   totalApplications: number;
@@ -171,38 +176,9 @@ export type ApplicationWithLogs = {
   application_log: ApplicationLog[];
 }
 
-export type ApplicationWithPosition = {
-  position: {
-    id: number;
-    title: string;
-    is_urgent: boolean;
-  };
-  application_log: ApplicationLog[];
-}
-
-export type ApplicationListItem = {
+export type ApplicationWithPositionJoin = {
   id: string;
-  date_submitted: string;
-  applicant: {
-    fname: string;
-    lname: string;
-  };
-  position: {
-    title: string;
-  };
+  pos_id: number;
+  position: { id: number; title: string }[]; 
 }
 
-export type ApplicationLogWithJoin = {
-  datetime: string;
-  status: string;
-  application: {
-    id: string;
-    applicant: {
-      fname: string;
-      lname: string;
-    };
-    position: {
-      title: string;
-    };
-  };
-}

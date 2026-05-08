@@ -344,7 +344,7 @@
 
 import { supabase } from "../../lib/supabase";
 import type { DashboardStats, RecentActivity, WeeklyTrend, TopPosition, StatusDistribution, MonthlyData, ApplicationLog, 
-  ApplicationWithLogs, ApplicationWithPosition, ApplicationListItem, ApplicationLogWithJoin } from "../types";
+  ApplicationWithLogs} from "../types";
 
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
@@ -502,10 +502,20 @@ export async function fetchTopPositions(limit: number = 5): Promise<TopPosition[
 
   if (error) throw new Error('Failed to fetch top positions');
 
+  if (!applications || applications.length === 0) {
+    return [];
+  }
+
   const positionMap = new Map<string, { title: string; applications: number; hired: number; isUrgent: boolean }>();
 
-  (applications as ApplicationWithPosition[] | null)?.forEach(app => {
-    const positionData = app.position;
+  // Use 'any' temporarily and then extract properly
+  (applications as any[]).forEach((app) => {
+    // Handle position data - Supabase returns it as an array
+    let positionData = app.position;
+    if (Array.isArray(positionData) && positionData.length > 0) {
+      positionData = positionData[0];
+    }
+    
     const positionTitle = positionData?.title;
     
     if (!positionTitle) return;
@@ -522,12 +532,15 @@ export async function fetchTopPositions(limit: number = 5): Promise<TopPosition[
     const stats = positionMap.get(positionTitle)!;
     stats.applications++;
 
-    const logs = app.application_log;
-    const latestLog = logs?.sort((a: ApplicationLog, b: ApplicationLog) => 
-      new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
-    )[0];
-
-    if (latestLog?.status === 'Hired') stats.hired++;
+    // Handle application_log - Supabase returns it as an array
+    let logs = app.application_log;
+    if (Array.isArray(logs) && logs.length > 0) {
+      const latestLog = logs.sort((a: any, b: any) => 
+        new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+      )[0];
+      
+      if (latestLog?.status === 'Hired') stats.hired++;
+    }
   });
 
   const sorted = Array.from(positionMap.values())
@@ -618,6 +631,7 @@ export async function fetchMonthlyTrends(): Promise<MonthlyData[]> {
 export async function fetchRecentActivities(limit: number = 6): Promise<RecentActivity[]> {
   const activities: RecentActivity[] = [];
 
+  // Fetch recent applications
   const { data: recentApps, error: appsError } = await supabase
     .from('application')
     .select(`
@@ -630,21 +644,31 @@ export async function fetchRecentActivities(limit: number = 6): Promise<RecentAc
     .limit(4);
 
   if (!appsError && recentApps) {
-    (recentApps as ApplicationListItem[]).forEach(app => {
-      const applicantData = app.applicant;
-      const positionData = app.position;
-      activities.push({
-        id: app.id,
-        type: 'application',
-        title: 'New Application',
-        description: `${applicantData?.fname} ${applicantData?.lname} applied for ${positionData?.title}`,
-        timestamp: app.date_submitted,
-        applicantName: `${applicantData?.fname} ${applicantData?.lname}`,
-        positionTitle: positionData?.title
-      });
+    (recentApps as any[]).forEach(app => {
+      // Extract from arrays (Supabase returns nested selects as arrays)
+      const applicantData = Array.isArray(app.applicant) && app.applicant.length > 0 
+        ? app.applicant[0] 
+        : app.applicant;
+      
+      const positionData = Array.isArray(app.position) && app.position.length > 0 
+        ? app.position[0] 
+        : app.position;
+      
+      if (applicantData && positionData) {
+        activities.push({
+          id: app.id,
+          type: 'application',
+          title: 'New Application',
+          description: `${applicantData?.fname || ''} ${applicantData?.lname || ''} applied for ${positionData?.title || ''}`,
+          timestamp: app.date_submitted,
+          applicantName: `${applicantData?.fname || ''} ${applicantData?.lname || ''}`,
+          positionTitle: positionData?.title || ''
+        });
+      }
     });
   }
 
+  // Fetch recent status changes
   const { data: recentLogs, error: logsError } = await supabase
     .from('application_log')
     .select(`
@@ -656,25 +680,40 @@ export async function fetchRecentActivities(limit: number = 6): Promise<RecentAc
     .limit(4);
 
   if (!logsError && recentLogs) {
-    (recentLogs as ApplicationLogWithJoin[]).forEach(log => {
-      const appData = log.application;
-      const applicantData = appData?.applicant;
-      const positionData = appData?.position;
+    (recentLogs as any[]).forEach(log => {
+      // Extract application data
+      let appData = log.application;
+      if (Array.isArray(appData) && appData.length > 0) {
+        appData = appData[0];
+      }
+      
+      // Extract applicant and position from the application data
+      let applicantData = appData?.applicant;
+      if (Array.isArray(applicantData) && applicantData.length > 0) {
+        applicantData = applicantData[0];
+      }
+      
+      let positionData = appData?.position;
+      if (Array.isArray(positionData) && positionData.length > 0) {
+        positionData = positionData[0];
+      }
+      
       if (applicantData && positionData) {
         activities.push({
           id: log.datetime,
           type: 'status_change',
           title: 'Status Updated',
-          description: `${applicantData?.fname} ${applicantData?.lname}'s application for ${positionData?.title} changed to ${log.status}`,
+          description: `${applicantData?.fname || ''} ${applicantData?.lname || ''}'s application for ${positionData?.title || ''} changed to ${log.status}`,
           timestamp: log.datetime,
           status: log.status,
-          applicantName: `${applicantData?.fname} ${applicantData?.lname}`,
-          positionTitle: positionData?.title
+          applicantName: `${applicantData?.fname || ''} ${applicantData?.lname || ''}`,
+          positionTitle: positionData?.title || ''
         });
       }
     });
   }
 
+  // Sort by timestamp and return top limit
   return activities
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, limit);

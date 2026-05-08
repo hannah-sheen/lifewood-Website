@@ -530,21 +530,20 @@ import type {
   ApplicationDetails, 
   ApplicationLog,
   Application, 
-  ApplicationWithJoin,
   ApplicationWithStatus
 } from '../types';
 
-// Helper to safely extract join data
-function extractJoinData<T>(data: T | any[] | null): T | null {
-  if (!data) return null;
-  if (Array.isArray(data) && data.length > 0) {
-    return data[0] as T;
-  }
-  if (!Array.isArray(data)) {
-    return data as T;
-  }
-  return null;
-}
+// // Helper to safely extract join data
+// function extractJoinData<T>(data: T | any[] | null): T | null {
+//   if (!data) return null;
+//   if (Array.isArray(data) && data.length > 0) {
+//     return data[0] as T;
+//   }
+//   if (!Array.isArray(data)) {
+//     return data as T;
+//   }
+//   return null;
+// }
 
 
 //======================================================================
@@ -661,23 +660,17 @@ export async function submitApplication(formData: ApplicationFormData) {
   }
 
   const { data: existingApplications, error: existingAppsError } = await supabase
-    .from('application')
-    .select(`
-      id,
-      pos_id,
-      position:pos_id (
-        id,
-        title
-      )
-    `)
-    .eq('apl_id', applicantId);
+  .from('application')
+  .select('id, pos_id')  // Just select the fields you need, no nested join
+  .eq('apl_id', applicantId);
 
-  if (existingAppsError) {
-    throw new Error('Error checking existing applications');
-  }
+if (existingAppsError) {
+  throw new Error('Error checking existing applications');
+}
 
-  const applicationsWithStatus = await Promise.all(
-  (existingApplications || []).map(async (app: Application) => {
+// Now the type is simple
+const applicationsWithStatus = await Promise.all(
+  (existingApplications || []).map(async (app: { id: string; pos_id: number }) => {
     const currentStatus = await getCurrentApplicationStatus(app.id);
     return {
       id: app.id,
@@ -702,32 +695,32 @@ export async function submitApplication(formData: ApplicationFormData) {
   }
 
   const conflictingPositions: string[] = [];
-  const newApplications: { pos_id: number; title: string }[] = [];
+const newApplications: { pos_id: number; title: string }[] = [];
 
-  for (const positionTitle of formData.positions) {
-    const positionInfo = positionIdsMap.get(positionTitle);
-    if (!positionInfo) continue;
+for (const positionTitle of formData.positions) {
+  const positionInfo = positionIdsMap.get(positionTitle);
+  if (!positionInfo) continue;
 
-    const existingApp = applicationsWithStatus.find(
-      (app: ApplicationWithStatus) => app.pos_id === positionInfo.id
-    );
+  const existingApp = applicationsWithStatus.find(
+    (app: ApplicationWithStatus) => app.pos_id === positionInfo.id
+  );
 
-    if (existingApp && existingApp.currentStatus) {
-      if (isApplicationActive(existingApp.currentStatus)) {
-        conflictingPositions.push(positionInfo.title);
-      } else {
-        newApplications.push({
-          pos_id: positionInfo.id,
-          title: positionInfo.title
-        });
-      }
-    } else if (!existingApp) {
+  if (existingApp && existingApp.currentStatus) {
+    if (isApplicationActive(existingApp.currentStatus)) {
+      conflictingPositions.push(positionInfo.title);
+    } else {
       newApplications.push({
         pos_id: positionInfo.id,
         title: positionInfo.title
       });
     }
+  } else if (!existingApp) {
+    newApplications.push({
+      pos_id: positionInfo.id,
+      title: positionInfo.title
+    });
   }
+}
 
 
   if (conflictingPositions.length > 0) {
@@ -933,31 +926,30 @@ export async function fetchAllApplications(): Promise<ApplicationDetails[]> {
     throw new Error('Failed to fetch applications');
   }
 
+  if (!applications || applications.length === 0) {
+    return [];
+  }
+
   const applicationsWithDetails = await Promise.all(
-    (applications || []).map(async (app: ApplicationWithJoin) => {
+    applications.map(async (app: any) => {
+      // Fetch logs for this application
       const { data: logsData, error: _logsError } = await supabase
         .from('application_log')
         .select('*')
         .eq('app_id', app.id)
         .order('datetime', { ascending: true });
 
-      const applicantData = extractJoinData<{
-        fname: string;
-        lname: string;
-        dob: string;
-        gender: string;
-        email: string;
-        phone: string;
-        address: string;
-        country: string;
-        resume: string | null;
-      }>(app.applicant);
+      // Extract applicant data (handles both array and object from join)
+      let applicantData = app.applicant;
+      if (Array.isArray(applicantData) && applicantData.length > 0) {
+        applicantData = applicantData[0];
+      }
 
-      const positionData = extractJoinData<{
-        id: number;
-        title: string;
-        description: string;
-      }>(app.position);
+      // Extract position data (handles both array and object from join)
+      let positionData = app.position;
+      if (Array.isArray(positionData) && positionData.length > 0) {
+        positionData = positionData[0];
+      }
 
       const logs = logsData || [];
       const currentStatus = logs.length > 0 

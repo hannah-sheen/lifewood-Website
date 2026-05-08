@@ -133,7 +133,7 @@ function KpiCard({ title, value, icon: Icon, trend, subtitle, delay = 0 }: any) 
   );
 }
 
-function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, monthlyTrends, recentActivities, isRefetching }: any) {
+function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, monthlyTrends, recentActivities }: any) {
   const totalActiveInPipeline = (stats.pendingReviews || 0) + (stats.shortlisted || 0);
   const totalClosed = (stats.totalHired || 0) + (stats.notSelected || 0) + (stats.declined || 0) + (stats.withdrawn || 0);
 
@@ -345,7 +345,7 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
                     innerRadius={55} outerRadius={80}
                     paddingAngle={4} dataKey="value"
                   >
-                    {statusDistribution.map((entry: any, index: number) => (
+                    {statusDistribution.map((_entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} stroke={BRAND_COLORS.white} strokeWidth={2} />
                     ))}
                   </Pie>

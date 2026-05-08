@@ -223,6 +223,86 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
     setFile(e.target.files?.[0] || null);
   };
   
+  // const handleSubmitButton = async () => {
+  //   setValidationsTriggered(prev => ({ ...prev, step3: true }));
+    
+  //   const isStep1Valid = validateStep1();
+  //   const isStep2Valid = validateStep2();
+  //   const isStep3Valid = selectedPositions.length > 0 && file !== null;
+    
+  //   if (!isStep1Valid) {
+  //     setValidationsTriggered(prev => ({ ...prev, step1: true }));
+  //     setCurrentStep(1);
+  //     return;
+  //   }
+    
+  //   if (!isStep2Valid) {
+  //     setValidationsTriggered(prev => ({ ...prev, step2: true }));
+  //     setCurrentStep(2);
+  //     return;
+  //   }
+    
+  //   if (!isStep3Valid) {
+  //     setCurrentStep(3);
+  //     return;
+  //   }
+    
+  //   setIsSubmitting(true);
+    
+  //   const applicationData: ApplicationFormData = {
+  //     fname: formData.firstName,
+  //     lname: formData.lastName,
+  //     gender: formData.gender,
+  //     dob: formData.birthDate,
+  //     email: formData.email,
+  //     phone: formData.phoneNumber,
+  //     address: formData.address,
+  //     country: selectedCountry.code,
+  //     positions: selectedPositions.map(p => p.title),
+  //     resumeFile: file as File
+  //   };
+    
+  //   try {
+  //     const result = await submitApplication(applicationData);
+      
+  //     if (result?.success) {
+  //       // Reset form first
+  //       setCurrentStep(1);
+  //       setFormData({
+  //         firstName: '', lastName: '', gender: '', birthDate: '',
+  //         email: '', phoneNumber: '', address: ''
+  //       });
+  //       setSelectedPositions([]);
+  //       setFile(null);
+  //       setValidationsTriggered({ step1: false, step2: false, step3: false });
+  //       setStep1Errors({ firstName: '', lastName: '', gender: '', birthDate: '' });
+  //       setStep2Errors({ email: '', phoneNumber: '', address: '' });
+        
+  //       if (onSuccess) onSuccess();
+
+  //       // Send confirmation email (non-blocking)
+  //       sendApplicationConfirmation(
+  //         `${formData.firstName} ${formData.lastName}`,
+  //         formData.email,
+  //         result.submittedPositions.map(p => p.title),
+  //         result.submittedPositions.map(p => p.id)
+  //       );
+
+  //       showSuccessToast(
+  //         result.isExistingApplicant
+  //           ? 'Additional applications submitted successfully!'
+  //           : 'Application submitted successfully! Check your email for confirmation.'
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('Submission error:', error);
+  //     const errorMessage = error instanceof Error ? error.message : 'Failed to submit application';
+  //     showErrorToast(errorMessage);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+  // Update the handleSubmitButton function
   const handleSubmitButton = async () => {
     setValidationsTriggered(prev => ({ ...prev, step3: true }));
     
@@ -280,13 +360,25 @@ export default function ApplicationForm({ onSuccess }: { onSuccess?: () => void 
         
         if (onSuccess) onSuccess();
 
-        // Send confirmation email (non-blocking)
-        sendApplicationConfirmation(
-          `${formData.firstName} ${formData.lastName}`,
-          formData.email,
-          result.submittedPositions.map(p => p.title),
-          result.submittedPositions.map(p => p.id)
-        );
+        // Send confirmation email (non-blocking) - Fixed with proper null checks
+        if (result.submittedPositions && result.submittedPositions.length > 0) {
+          const positionTitles = result.submittedPositions
+            .map(p => p?.title)
+            .filter((title): title is string => Boolean(title));
+          
+          const positionIds = result.submittedPositions
+            .map(p => p?.id)
+            .filter((id): id is string => Boolean(id));
+          
+          if (positionTitles.length > 0 && positionIds.length > 0) {
+            sendApplicationConfirmation(
+              `${formData.firstName} ${formData.lastName}`,
+              formData.email,
+              positionTitles,
+              positionIds
+            );
+          }
+        }
 
         showSuccessToast(
           result.isExistingApplicant
