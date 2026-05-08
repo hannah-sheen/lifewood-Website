@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import dataTechImg from '../../assets/login/data_tech.jpeg';
-import lifewoodLogo from '../../assets/lifewood-logo.avif';
+import dataTechImg from '../assets/login/data_tech.jpeg';
+import lifewoodLogo from '../assets/lifewood-logo.avif'
 import Button from '../components/Button.tsx';
 import { loginAuth } from '../services/authService.tsx';
 import InputField from '../components/InputField.tsx';
