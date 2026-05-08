@@ -134,3 +134,75 @@ export type MonthlyData = {
   applications: number;
   hired: number;
 }
+
+export type ApplicationWithJoin = {
+  id: string;
+  date_submitted: string;
+  apl_id: number;
+  pos_id: number;
+  applicant: {
+    id: number;
+    fname: string;
+    lname: string;
+    gender: string;
+    dob: string;
+    email: string;
+    phone: string;
+    address: string;
+    country: string;
+    resume: string | null;
+  } | any[];
+  position: {
+    id: number;
+    title: string;
+    description: string;
+  } | any[];
+}
+
+export type ApplicationWithStatus = {
+  id: string;
+  pos_id: number;
+  currentStatus: string;
+}
+
+export type ApplicationWithLogs = {
+  id: string;
+  date_submitted: string;
+  application_log: ApplicationLog[];
+}
+
+export type ApplicationWithPosition = {
+  position: {
+    id: number;
+    title: string;
+    is_urgent: boolean;
+  };
+  application_log: ApplicationLog[];
+}
+
+export type ApplicationListItem = {
+  id: string;
+  date_submitted: string;
+  applicant: {
+    fname: string;
+    lname: string;
+  };
+  position: {
+    title: string;
+  };
+}
+
+export type ApplicationLogWithJoin = {
+  datetime: string;
+  status: string;
+  application: {
+    id: string;
+    applicant: {
+      fname: string;
+      lname: string;
+    };
+    position: {
+      title: string;
+    };
+  };
+}
