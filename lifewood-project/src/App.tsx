@@ -9,7 +9,7 @@ import Careers from './pages/Careers';
 import Navbar from './components/Navbar';
 import Contact from './pages/Contact';
 import Services from './pages/Services';
-import LoginPage from './pages/login/Login';
+import LoginPage from './pages/login/Login.tsx';
 import Dashboard from './pages/dashboard/Dashboard';
 import Footer from './components/Footer';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
