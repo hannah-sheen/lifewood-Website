@@ -55,8 +55,8 @@ const emailWrapper = (content) => `
                     <p style="margin:0;font-family:'Manrope',system-ui,sans-serif;font-size:10px;font-weight:700;color:#708E7C;text-transform:uppercase;letter-spacing:2.5px;">Data Technology</p>
                   </td>
                 </tr>
-              </tr>
-            </td>
+              </table>
+            <tr>
           </tr>
 
           <!-- Saffron accent bar -->
@@ -72,7 +72,7 @@ const emailWrapper = (content) => `
           </tr>
 
           <!-- Footer -->
-          </table>
+          <tr>
             <td style="background:#133020;border-radius:0 0 16px 16px;padding:24px 40px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
@@ -96,6 +96,7 @@ const emailWrapper = (content) => `
 `;
 
 export default async function handler(req, res) {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
