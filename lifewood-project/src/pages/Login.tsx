@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import dataTechImg from '../../assets/login/data_tech.jpeg';
 import lifewoodLogo from '../../assets/lifewood-logo.avif';
 import Button from '../components/Button.tsx';
-import { loginAuth } from './login/authService.tsx';
+import { loginAuth } from '../services/authService.tsx';
 import InputField from '../components/InputField.tsx';
 import { showSuccessToast, showErrorToast } from '../components/Toast.tsx';
 import { supabase } from '../lib/supabase.ts';

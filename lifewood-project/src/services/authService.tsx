@@ -1,5 +1,5 @@
 // pages/login/authService.tsx
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export async function loginAuth(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
