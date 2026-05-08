@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 // ─── Logo CID inline attachment ───────────────────────────────────────────────
 const logoAttachment = {
   filename: 'lifewood-logo.avif',
-  path: path.join(__dirname, 'src/assets/lifewood-paper-logo.avif'),
+  path: path.join(__dirname, 'assets/lifewood-paper-logo.avif'),
   cid: 'lifewood-logo@lifewood',
 };
 
