@@ -89,7 +89,15 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // First check if there's a valid Supabase session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
         
         if (!session) {
           setIsAdmin(false);
@@ -97,12 +105,16 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
           return;
         }
 
-        // Use auth_uid (not auth_id) - match your table column name
+        // Verify the user is an admin in the database
         const { data: adminData, error } = await supabase
           .from('admin')
           .select('id')
           .eq('auth_uid', session.user.id)
           .single();
+
+        if (error) {
+          console.error('Admin check error:', error);
+        }
 
         const isValidAdmin = !!adminData && !error;
         setIsAdmin(isValidAdmin);
