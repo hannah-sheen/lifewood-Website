@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, Users, CheckCircle, Clock, Briefcase, FileText, 
   UserCheck, Activity, Eye, Award, Zap, ArrowUp, 
@@ -148,15 +148,8 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-darkSerpent">Dashboard</h1>
-          <p className="text-gray-500 text-xs mt-1">Overview of your recruitment operations</p>
-        </div>
-      </div>
-
       {/* Primary KPI Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <KpiCard title="Total Applications" value={stats.totalApplications} icon={FileText} trend={`+${stats.monthlyGrowth}%`} subtitle="Last 30 days" delay={0} />
         <KpiCard title="Active Positions" value={stats.activePositions} icon={Briefcase} subtitle={`${stats.urgentPositions} urgent`} delay={0.1} />
         <KpiCard title="Total Hired" value={stats.totalHired} icon={CheckCircle} subtitle={`${stats.conversionRate}% conversion`} delay={0.2} />
@@ -164,7 +157,7 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
       </div>
 
       {/* Secondary KPI Row - Grid Adjusted for 5 columns */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 pt-2">
         <KpiCard title="Pending" value={stats.pendingReviews} icon={Clock} delay={0.4} />
         <KpiCard title="Shortlisted" value={stats.shortlisted} icon={UserCheck} delay={0.45} />
         <KpiCard title="Rejected" value={stats.notSelected || 0} icon={XCircle} delay={0.5} />
@@ -173,7 +166,7 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
       </div>
 
       {/* Pipeline Summary */}
-      <div className="bg-gradient-to-r from-darkSerpent/[0.03] to-castletonGreen/[0.03] rounded-2xl p-6 border border-lightGray/20 shadow-inner relative overflow-hidden">
+      <div className="bg-gradient-to-r from-darkSerpent/[0.03] to-castletonGreen/[0.03] rounded-2xl p-4 sm:p-6 border border-lightGray/20 shadow-inner relative overflow-hidden">
          <motion.div 
            animate={{ x: ["-100%", "100%"] }} 
            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -184,22 +177,22 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
             { label: 'Active Pipeline', value: totalActiveInPipeline, subtitle: 'In Review & Shortlisted' },
             { label: 'Avg Time to Hire', value: `${stats.avgTimeToHire} days`, subtitle: 'Current velocity' },
             { label: 'Conversion Rate', value: `${stats.conversionRate}%`, subtitle: 'Success ratio' },
-            { label: 'Closed Cases', value: totalClosed, subtitle: 'Finalized entries' },
+            { label: 'Closed Applications', value: totalClosed, subtitle: 'Finalized entries' },
           ].map((item, i) => (
-            <div key={i} className="flex items-center gap-6">
+            <div key={i} className="flex items-center gap-4 sm:gap-6">
               <div className="text-center">
                 <p className="text-[10px] uppercase font-bold text-ashGray tracking-widest">{item.label}</p>
-                <p className="text-3xl font-black text-darkSerpent tracking-tight my-1">{item.value}</p>
+                <p className="text-2xl sm:text-3xl font-black text-darkSerpent tracking-tight my-1">{item.value}</p>
                 <p className="text-[10px] text-pastelGreen font-semibold italic">{item.subtitle}</p>
               </div>
-              {i !== 3 && <div className="w-px h-16 bg-lightGray/30 hidden md:block" />}
+              {i !== 3 && <div className="w-px h-12 sm:h-16 bg-lightGray/30 hidden md:block" />}
             </div>
           ))}
         </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-white rounded-2xl p-6 border border-lightGray/20 shadow-sm">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-seaSalt">
             <h3 className="text-sm font-bold text-darkSerpent uppercase tracking-wider">Weekly Activity Flow</h3>
@@ -287,27 +280,27 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
       </div>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
-        <div className="bg-white rounded-2xl p-6 border border-lightGray/20 shadow-sm">
-          <div className="flex items-center justify-between mb-6 pb-2 border-b border-seaSalt">
-            <h3 className="text-sm font-bold text-darkSerpent uppercase tracking-wider">Position Performance</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 border border-lightGray/20 shadow-sm">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 pb-2 border-b border-seaSalt">
+            <h3 className="text-xs sm:text-sm font-bold text-darkSerpent uppercase tracking-wider">Position Performance</h3>
             <Award size={16} className="text-lightGreen" />
           </div>
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             {topPositions.map((pos: any, idx: number) => {
               const maxApplicants = topPositions[0]?.applications || 1;
               const barWidth = `${Math.min((pos.applications / maxApplicants) * 100, 100)}%`;
               return (
-                <div key={idx} className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-darkSerpent flex items-center justify-center flex-shrink-0">
-                    <span className="text-[11px] font-black text-saffaron">#{idx + 1}</span>
+                <div key={idx} className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-darkSerpent flex items-center justify-center flex-shrink-0">
+                    <span className="text-[10px] sm:text-[11px] font-black text-saffaron">#{idx + 1}</span>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <p className="text-sm font-bold text-darkSerpent truncate tracking-tighter">{pos.title}</p>
+                      <p className="text-xs sm:text-sm font-bold text-darkSerpent truncate tracking-tighter">{pos.title}</p>
                       {pos.isUrgent && (
-                        <span className="flex items-center gap-1.5 text-[9px] font-black text-white bg-red-600 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                          <Flame size={10} className="fill-white" /> Urgent
+                        <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black text-white bg-red-600 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-widest flex-shrink-0">
+                          <Flame size={10} className="fill-white" /> <span className="hidden sm:inline">Urgent</span>
                         </span>
                       )}
                     </div>
@@ -320,9 +313,9 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
                       />
                     </div>
                   </div>
-                  <div className="text-right w-16">
-                    <p className="text-base font-black text-darkSerpent leading-none">{pos.applications}</p>
-                    <p className="text-[10px] text-pastelGreen font-semibold">candidates</p>
+                  <div className="text-right w-12 sm:w-16 flex-shrink-0">
+                    <p className="text-sm sm:text-base font-black text-darkSerpent leading-none">{pos.applications}</p>
+                    <p className="text-[9px] sm:text-[10px] text-pastelGreen font-semibold hidden sm:block">candidates</p>
                   </div>
                 </div>
               );
@@ -330,19 +323,19 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-lightGray/20 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 border border-lightGray/20 shadow-sm">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-seaSalt">
-            <h3 className="text-sm font-bold text-darkSerpent uppercase tracking-wider">Candidate Distribution</h3>
+            <h3 className="text-xs sm:text-sm font-bold text-darkSerpent uppercase tracking-wider">Candidate Distribution</h3>
             <Eye size={16} className="text-lightGreen" />
           </div>
-          <div className="flex items-center gap-8">
-            <div className="w-1/2 h-[190px]">
+          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+            <div className="w-full sm:w-1/2 h-[160px] sm:h-[190px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={statusDistribution}
                     cx="50%" cy="50%"
-                    innerRadius={55} outerRadius={80}
+                    innerRadius={45} outerRadius={65}
                     paddingAngle={4} dataKey="value"
                   >
                     {statusDistribution.map((_entry: any, index: number) => (
@@ -353,12 +346,12 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex-1 space-y-2.5">
+            <div className="flex-1 space-y-2 sm:space-y-2.5 w-full">
               {statusDistribution.map((status: any, idx: number) => (
                 <div key={idx} className="flex items-center justify-between group cursor-default">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div className="relative">
-                       <div className="w-2.5 h-2.5 rounded-full z-10 relative" style={{ backgroundColor: pieColors[idx % pieColors.length] }} />
+                       <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full z-10 relative" style={{ backgroundColor: pieColors[idx % pieColors.length] }} />
                        <motion.div 
                          animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
                          transition={{ repeat: Infinity, duration: 2.5, delay: idx * 0.3 }}
@@ -366,9 +359,9 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
                          style={{ backgroundColor: pieColors[idx % pieColors.length] }}
                        />
                     </div>
-                    <span className="text-[10px] font-bold text-ashGray uppercase tracking-widest group-hover:text-darkSerpent transition-colors">{status.name}</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold text-ashGray uppercase tracking-widest group-hover:text-darkSerpent transition-colors">{status.name}</span>
                   </div>
-                  <span className="text-sm font-black text-darkSerpent leading-none">{status.value}</span>
+                  <span className="text-xs sm:text-sm font-black text-darkSerpent leading-none">{status.value}</span>
                 </div>
               ))}
             </div>
@@ -377,30 +370,30 @@ function DashboardView({ stats, weeklyTrends, topPositions, statusDistribution, 
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-2xl p-6 border border-lightGray/20 shadow-sm">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-seaSalt">
-          <h3 className="text-sm font-bold text-darkSerpent uppercase tracking-wider flex items-center gap-2">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-lightGray/20 shadow-sm">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 pb-2 border-b border-seaSalt">
+          <h3 className="text-xs sm:text-sm font-bold text-darkSerpent uppercase tracking-wider flex items-center gap-2">
              <div className="w-2 h-2 bg-saffaron rounded-full animate-pulse" />
-             Live Stream
+             Activity Feed
           </h3>
           <Zap size={16} className="text-lightGreen" />
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {recentActivities.map((activity: any, idx: number) => (
-            <div key={idx} className="flex items-start gap-4 pb-4 border-b border-seaSalt last:border-0 last:pb-0 group">
+            <div key={idx} className="flex items-start gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-seaSalt last:border-0 last:pb-0 group">
               <div className="relative mt-1">
-                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${activity.type === 'application' ? 'bg-castletonGreen' : 'bg-saffaron'}`} />
+                <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 ${activity.type === 'application' ? 'bg-castletonGreen' : 'bg-saffaron'}`} />
                 <motion.div 
                   animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ repeat: Infinity, duration: 2 }}
                   className={`absolute inset-0 rounded-full ${activity.type === 'application' ? 'bg-castletonGreen/40' : 'bg-saffaron/40'}`}
                 />
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-darkSerpent uppercase transition-colors group-hover:text-castletonGreen">{activity.title}</p>
-                <p className="text-xs text-pastelGreen font-semibold tracking-tighter">{activity.description}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-bold text-darkSerpent uppercase transition-colors group-hover:text-castletonGreen truncate">{activity.title}</p>
+                <p className="text-[11px] sm:text-xs text-pastelGreen font-semibold tracking-tighter truncate">{activity.description}</p>
               </div>
-              <p className="text-[11px] font-bold text-ashGray/60 pt-0.5 italic">{formatDateTime(activity.timestamp)}</p>
+              <p className="text-[10px] sm:text-[11px] font-bold text-ashGray/60 pt-0.5 italic flex-shrink-0">{formatDateTime(activity.timestamp)}</p>
             </div>
           ))}
         </div>
@@ -421,7 +414,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isRefetching, setIsRefetching] = useState(false);
 
-  const loadDashboardData = async (silent = false) => {
+  const loadDashboardData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setIsRefetching(true);
 
@@ -443,18 +436,13 @@ export default function AdminDashboard() {
       setLoading(false);
       setIsRefetching(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadDashboardData();
-
-    // Auto-refetch every 60 seconds
-    const interval = setInterval(() => {
-      loadDashboardData(true);
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
+    if (activeTab === 'dashboard') {
+      loadDashboardData();
+    }
+  }, [activeTab, loadDashboardData]);
 
   return (
     <div className="flex h-screen bg-seaSalt font-sans text-darkSerpent overflow-hidden">
@@ -468,7 +456,7 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-6 z-10">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -479,17 +467,19 @@ export default function AdminDashboard() {
             >
               {activeTab === 'dashboard' && (
                 <>
-                  {/* CASE 1: Initial Loading 
-                    CASE 2: Refetching (We swap back to skeleton to show active sync)
-                  */}
+                  {/* Header - Always visible */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-4 sm:mb-6">
+                    <div>
+                      <h1 className="text-xl sm:text-2xl font-bold text-darkSerpent">Dashboard</h1>
+                      <p className="text-gray-500 text-xs mt-1">Overview of your recruitment operations</p>
+                    </div>
+                  </div>
+
+                  {/* Content - Shows loading or data */}
                   {(loading || isRefetching) && !stats ? (
                     <DashboardSkeleton />
                   ) : (
                     <div className={isRefetching ? "opacity-50 pointer-events-none transition-opacity duration-500" : "opacity-100 transition-opacity duration-500"}>
-                      {/* If we have stats but are refetching, we show the dashboard 
-                        at 50% opacity so the user can still read the old data 
-                        while the new data is fetched.
-                      */}
                       {stats && (
                         <DashboardView 
                           stats={stats} 
@@ -503,8 +493,6 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Optional: Add the Skeleton as a ghost layer during refetching 
-                      if you prefer a total UI swap instead of opacity */}
                   {isRefetching && stats && (
                     <div className="absolute inset-0 z-20 p-6 bg-seaSalt/30 backdrop-blur-[1px]">
                       <DashboardSkeleton />

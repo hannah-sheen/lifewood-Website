@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LayoutGrid, FileText, Briefcase, ChevronLeft, LogOut, Settings, Menu, X } from 'lucide-react';
 import lifewoodPaperLogo from '../assets/lifewood-paper-logo.avif';
 import lifewoodRoundLogo from '../assets/lifewood-round-logo.png';
 import ConfirmationModal from './ConfirmationModal';
@@ -36,7 +36,8 @@ const ADMIN_LOGIN_PATH = import.meta.env.VITE_ADMIN_LOGIN_PATH;
 
 export default function DashboardSidebar({ activeTab, isCollapsed, onTabChange, onToggleCollapse }: DashboardSidebarProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false); 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
  
   const confirmLogout = async () => {
@@ -69,12 +70,33 @@ export default function DashboardSidebar({ activeTab, isCollapsed, onTabChange, 
 
   return (
     <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="md:hidden fixed top-20 left-4 z-40 bg-darkSerpent text-white p-2.5 rounded-lg shadow-lg hover:bg-darkSerpent/90 transition-colors"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 80 : 260 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        // z-30 keeps it below the modal overlay (z-50) but above the dashboard
-        className="bg-darkSerpent text-white p-6 flex flex-col relative shadow-2xl z-30"
+        className="bg-darkSerpent text-white p-4 sm:p-6 flex flex-col relative shadow-2xl z-30 hidden md:flex"
       >
         {/* ANIMATED GRADIENT WRAPPER (Prevents yellow leaking while allowing button to show) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-r-xl">
@@ -95,20 +117,20 @@ export default function DashboardSidebar({ activeTab, isCollapsed, onTabChange, 
           </motion.div>
         </motion.button>
 
-        <div className="mb-12 flex items-center justify-center relative z-10">
+        <div className="mb-8 sm:mb-12 flex items-center justify-center relative z-10">
           {isCollapsed
-            ? <img src={lifewoodRoundLogo} alt="Lifewood" className="w-14 h-14 object-contain" />
-            : <img src={lifewoodPaperLogo} alt="Lifewood" className="h-8 w-auto object-contain" />
+            ? <img src={lifewoodRoundLogo} alt="Lifewood" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
+            : <img src={lifewoodPaperLogo} alt="Lifewood" className="h-7 sm:h-8 w-auto object-contain" />
           }
         </div>
 
-        <nav className="flex-1 space-y-3 relative z-10">
+        <nav className="flex-1 space-y-2 sm:space-y-3 relative z-10">
           <NavItem active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} icon={<LayoutGrid size={20} />} label="Dashboard" collapsed={isCollapsed} />
           <NavItem active={activeTab === 'applications'} onClick={() => onTabChange('applications')} icon={<FileText size={20} />} label="Applications" collapsed={isCollapsed} />
           <NavItem active={activeTab === 'positions'} onClick={() => onTabChange('positions')} icon={<Briefcase size={20} />} label="Positions" collapsed={isCollapsed} />
         </nav>
 
-        <div className="border-t border-white/10 pt-6 space-y-3 relative z-10">
+        <div className="border-t border-white/10 pt-4 sm:pt-6 space-y-2 sm:space-y-3 relative z-10">
           <NavItem icon={<Settings size={20} />} label="Settings" collapsed={isCollapsed} />
           {/* 3. Change onClick to trigger the modal instead of immediate logout */}
           <NavItem 
@@ -119,6 +141,77 @@ export default function DashboardSidebar({ activeTab, isCollapsed, onTabChange, 
           />
         </div>
       </motion.aside>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.aside
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="md:hidden fixed top-0 left-0 h-full w-64 bg-darkSerpent text-white p-6 flex flex-col shadow-2xl z-50"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Animated Gradient */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-r-xl">
+              <motion.div 
+                animate={{ scale: [1, 1.3, 1], rotate: [0, -45, 0], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                className="absolute -bottom-20 -right-20 w-80 h-80 bg-saffaron rounded-full blur-[100px]"
+              />
+            </div>
+
+            {/* Logo */}
+            <div className="mb-12 flex items-center justify-center relative z-10">
+              <img src={lifewoodPaperLogo} alt="Lifewood" className="h-8 w-auto object-contain" />
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 space-y-3 relative z-10">
+              <NavItem 
+                active={activeTab === 'dashboard'} 
+                onClick={() => { onTabChange('dashboard'); setIsMobileMenuOpen(false); }} 
+                icon={<LayoutGrid size={20} />} 
+                label="Dashboard" 
+                collapsed={false} 
+              />
+              <NavItem 
+                active={activeTab === 'applications'} 
+                onClick={() => { onTabChange('applications'); setIsMobileMenuOpen(false); }} 
+                icon={<FileText size={20} />} 
+                label="Applications" 
+                collapsed={false} 
+              />
+              <NavItem 
+                active={activeTab === 'positions'} 
+                onClick={() => { onTabChange('positions'); setIsMobileMenuOpen(false); }} 
+                icon={<Briefcase size={20} />} 
+                label="Positions" 
+                collapsed={false} 
+              />
+            </nav>
+
+            {/* Bottom Actions */}
+            <div className="border-t border-white/10 pt-6 space-y-3 relative z-10">
+              <NavItem icon={<Settings size={20} />} label="Settings" collapsed={false} />
+              <NavItem 
+                icon={<LogOut size={20} />} 
+                label="Logout" 
+                collapsed={false} 
+                onClick={() => { setShowLogoutModal(true); setIsMobileMenuOpen(false); }} 
+              />
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* 4. THE MODAL (Placed outside the sidebar to avoid clipping) */}
       <ConfirmationModal
