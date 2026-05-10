@@ -97,6 +97,14 @@ export default function Applications() {
   // Reset page when filters change
   useEffect(() => { setCurrentPage(1); }, [search, statusFilter, positionFilter]);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    const tableContainer = document.querySelector('.flex-1.overflow-y-auto.overflow-x-auto');
+    if (tableContainer) {
+      tableContainer.scrollTop = 0;
+    }
+  }, [currentPage]);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
 
   const SortIcon = ({ col }: { col: SortKey }) => {
@@ -188,7 +196,7 @@ export default function Applications() {
           </div>
 
           {/* Scrollable Table Body */}
-          <div className="flex-1 overflow-y-auto overflow-x-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-auto" id="applications-table-body">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-darkSerpent/30">
                 <Briefcase className="w-10 h-10 mb-3 opacity-20" />

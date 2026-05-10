@@ -21,6 +21,11 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <nav className="bg-seaSalt sticky top-0 z-50 shadow-md border-b border-darkSerpent/5">
 
@@ -33,7 +38,7 @@ export default function Navbar() {
             src={lifewoodLogo}
             alt="Lifewood"
             className="shrink-0 cursor-pointer opacity-95 hover:opacity-100 transition-opacity h-10 w-auto"
-            onClick={() => navigate('/')}
+            onClick={() => handleNavigation('/')}
           />
         </div>
 
@@ -44,7 +49,7 @@ export default function Navbar() {
             return (
               <div
                 key={path}
-                onClick={() => navigate(path)}
+                onClick={() => handleNavigation(path)}
                 className="group relative inline-flex flex-col items-center cursor-pointer gap-1.5 py-1"
               >
                 <span className={`text-sm whitespace-nowrap transition-colors duration-200 ${
@@ -82,7 +87,7 @@ export default function Navbar() {
         {NAV_ITEMS.map(({ label, path }) => (
           <div
             key={path}
-            onClick={() => { navigate(path); setMenuOpen(false); }}
+            onClick={() => { handleNavigation(path); setMenuOpen(false); }}
             className={`py-3 text-sm font-medium cursor-pointer border-b border-gray-100 last:border-0 ${
               isActive(path) ? 'text-darkSerpent' : 'text-darkSerpent/60'
             }`}

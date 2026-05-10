@@ -442,6 +442,11 @@ export default function AdminDashboard() {
     if (activeTab === 'dashboard') {
       loadDashboardData();
     }
+    // Scroll to top when switching tabs
+    const mainContent = document.querySelector('main.flex-1.overflow-y-auto');
+    if (mainContent) {
+      mainContent.scrollTop = 0;
+    }
   }, [activeTab, loadDashboardData]);
 
   return (
