@@ -1,5 +1,14 @@
 import { useRef, useState, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+
+const HOME_SECTIONS = [
+  { id: 'hero',       label: 'Home' },
+  { id: 'about',      label: 'About Lifewood' },
+  { id: 'global',     label: 'Global Reach' },
+  { id: 'clients',    label: 'Clients & Partners' },
+  { id: 'innovation', label: 'Innovation' },
+  { id: 'tagline',    label: 'Always On' },
+];
 import ContactButton from '../components/ContactButton.tsx';
 import Animate from '../components/Animate.tsx';
 import Button from '../components/Button.tsx';
@@ -41,7 +50,28 @@ export default function Home({ playVideoRef }: HomeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const [activeSection, setActiveSection] = useState('hero');
   const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    HOME_SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { threshold: 0.4 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = true;
@@ -71,8 +101,31 @@ export default function Home({ playVideoRef }: HomeProps) {
 
   return (
     <>
+      {/* FLOATING SIDE NAV */}
+      <nav className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-[100] hidden lg:flex flex-col gap-8">
+        {HOME_SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => scrollToSection(s.id)}
+            className="group flex items-center justify-end gap-4 outline-none"
+          >
+            <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] font-black uppercase tracking-[0.2em] text-darkSerpent bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md pointer-events-none translate-x-2 group-hover:translate-x-0">
+              {s.label}
+            </span>
+            <div className="relative flex items-center justify-center">
+              <div className={`h-4 w-4 rounded-full border-2 transition-all duration-300 ${
+                activeSection === s.id ? 'border-saffaron' : 'border-saffaron'
+              }`} />
+              <div className={`absolute h-1.5 w-1.5 rounded-full bg-earthYellow transition-transform duration-300 shadow-[0_0_8px_rgba(255,179,71,0.8)] ${
+                activeSection === s.id ? 'scale-100' : 'scale-0 group-hover:scale-100'
+              }`} />
+            </div>
+          </button>
+        ))}
+      </nav>
+
       {/* HERO */}
-     <section ref={heroRef} className="relative text-white min-h-screen flex items-center overflow-hidden">
+     <section id="hero" ref={heroRef} className="relative text-white min-h-screen flex items-center overflow-hidden">
       {/* BACKGROUND VIDEO */}
       <video 
         ref={videoRef} 
@@ -260,7 +313,7 @@ export default function Home({ playVideoRef }: HomeProps) {
       </MouseTrail>
 
       {/* TAGLINE */}
-    <section className="py-24 bg-white overflow-hidden">
+    <section id="tagline" className="py-24 bg-white overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <Animate>
             <h2 className="text-4xl font-semibold mb-6">Always switched on, never off.</h2>
