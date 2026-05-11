@@ -188,6 +188,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import ProtectedRoute from './components/ProtectedRoute';
+import Chatbot from './components/Chatbot';
 
 // Pages
 import Home from './pages/Home';
@@ -239,6 +240,7 @@ function SiteLayout({ children, onShowCookieBanner }: any) {
       {showNavFooter && <Navbar />}
       <main>{children}</main>
       {showNavFooter && <Footer onShowCookieBanner={onShowCookieBanner} />}
+      {showNavFooter && <Chatbot />}
     </div>
   );
 }
