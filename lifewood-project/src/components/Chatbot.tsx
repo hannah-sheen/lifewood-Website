@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
   from: 'bot' | 'user';
@@ -297,17 +298,34 @@ export default function Chatbot() {
   return (
     <>
       {/* FLOATING BUTTON */}
-      <button
+      <motion.button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-[200] w-14 h-14 rounded-full bg-saffaron shadow-lg flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-6 right-6 z-[200] w-14 h-14 rounded-full bg-saffaron shadow-lg flex items-center justify-center cursor-pointer"
         aria-label="Open chat"
       >
-        {open ? <X className="w-6 h-6 text-darkSerpent" /> : <MessageCircle className="w-6 h-6 text-darkSerpent" />}
-      </button>
+        <AnimatePresence mode="wait" initial={false}>
+          {open ? (
+            <motion.span key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+              <X className="w-6 h-6 text-darkSerpent" />
+            </motion.span>
+          ) : (
+            <motion.span key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+              <MessageCircle className="w-6 h-6 text-darkSerpent" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.button>
 
       {/* CHAT POPUP */}
+      <AnimatePresence>
       {open && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 28 }}
           className="fixed bottom-24 right-6 z-[200] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-darkSerpent/10"
           style={{ maxHeight: '520px' }}
         >
@@ -372,8 +390,9 @@ export default function Chatbot() {
               <Send className="w-4 h-4 text-darkSerpent" />
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </>
   );
 }
